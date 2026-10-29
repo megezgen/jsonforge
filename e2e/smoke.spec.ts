@@ -92,10 +92,10 @@ test.describe("JSON Forge", () => {
     await expect(results.locator(".text-danger")).toBeVisible();
   });
 
-  test("footer links to the repository and hides the empty support link", async ({ page }) => {
+  test("footer links to the repository and the support page", async ({ page }) => {
     await page.goto("/about/");
     await expect(page.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", /github\.com\/megezgen\/jsonforge/);
-    await expect(page.getByRole("link", { name: "Support the project" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Support the project" })).toHaveAttribute("href", /buymeacoffee\.com\/jsonforgedev/);
   });
 
   test("diff highlights changes", async ({ page }) => {

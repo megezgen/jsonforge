@@ -11,3 +11,6 @@ playwright-report
 
 # Internal notes, kept local
 docs/
+
+# Local branding output
+branding/*.png
