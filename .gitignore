@@ -8,3 +8,6 @@ test-results
 playwright-report
 .next-dev
 .claude
+
+# Internal notes, kept local
+docs/

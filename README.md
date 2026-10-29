@@ -48,3 +48,15 @@ The Playwright suite runs against the static export in the locally installed Goo
 npm run build
 npm run test:e2e
 ```
+
+## Live site
+
+https://jsonforge.dev
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE)
