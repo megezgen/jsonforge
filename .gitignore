@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+public/monaco
+next-env.d.ts
+*.tsbuildinfo
+test-results
+playwright-report
+.next-dev
+.claude
