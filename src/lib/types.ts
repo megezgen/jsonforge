@@ -79,3 +79,15 @@ export interface NodeCopy {
   json: string;
   path: string;
 }
+
+export interface QueryItem {
+  /** JavaScript-style accessor of the match, e.g. $.users[0].name */
+  path: string;
+  pointer: string;
+  type: NodeType;
+  preview: string;
+}
+
+export type QueryResult =
+  | { ok: true; total: number; items: QueryItem[]; valuesJson: string | null }
+  | { ok: false; error: string };

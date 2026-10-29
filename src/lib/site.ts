@@ -691,6 +691,70 @@ export const PAGES: ToolPage[] = [
     faq: [{ q: "Which draft does the output use?", a: "Draft 2020-12, declared with the $schema keyword. The keywords used (type, properties, required, items, anyOf) work in older drafts too." }, ...COMMON_FAQ],
     keywords: ["json to json schema", "generate json schema from json", "json schema generator", "infer json schema"],
   },
+  {
+    slug: "jsonpath-tester",
+    title: "JSONPath Tester Online: Evaluate JSONPath Expressions",
+    description: "Test JSONPath expressions against your JSON online. See every match with its full path, filter with conditions and copy the results. Runs in your browser.",
+    h1: "JSONPath Tester",
+    intro: "Write a JSONPath expression and see every match with its full path and value, live. Filters, wildcards, recursive descent and slices are supported, and nothing leaves your browser.",
+    tab: "query",
+    howTo: {
+      title: "How to test a JSONPath expression",
+      steps: [
+        "Paste your JSON into the editor on the left.",
+        "Type an expression in the Query tab, for example $.users[*].name, or click one of the examples.",
+        "Read the matches with their paths, and press Copy values to copy all matched values as a JSON array.",
+      ],
+    },
+    sections: [
+      {
+        h: "JSONPath syntax cheat sheet",
+        p: "$ is the root. .name or ['name'] selects a key, [0] an array index and [*] or .* every child. .. searches all levels, so $..price finds every price anywhere. [0:3] slices an array, [0,2] picks several indexes, and [?(@.price < 10)] filters items by a condition, where @ is the current item.",
+      },
+      {
+        h: "Filters and comparisons",
+        p: "Filter expressions compare values of the current item, for example $.books[?(@.price > 10 && @.inStock == true)].title. Strings must be quoted, and a filter on a missing key simply does not match. Filters are evaluated by a built-in parser, not by running JavaScript.",
+      },
+      {
+        h: "Using the paths in code",
+        p: "Each match is shown with a JavaScript-style accessor such as $.users[0].name. In the Tree tab you can also hover any row and copy its path, which is the quickest way to build an expression for a value you can see.",
+      },
+    ],
+    faq: [
+      { q: "Which JSONPath implementation is used?", a: "The tool uses the widely used jsonpath-plus library in its safe mode. It supports the common JSONPath syntax; implementations differ in edge cases, so check unusual expressions against your own library." },
+      { q: "Does it run my expression as JavaScript?", a: "No. Filter expressions are parsed by a built-in evaluator, so arbitrary code cannot run." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["jsonpath tester", "jsonpath online", "jsonpath evaluator", "jsonpath expression tester"],
+  },
+  {
+    slug: "json-path-finder",
+    title: "JSON Path Finder Online: Click a Value, Copy Its Path",
+    description: "Find the path of any value in your JSON. Click through the tree, search by key or value, and copy the exact path. Free and 100% client-side.",
+    h1: "JSON Path Finder",
+    intro: "Find the exact path to any value in a JSON document. Explore the tree, search for the value you need and copy its path with one click.",
+    tab: "tree",
+    howTo: {
+      title: "How to find the path of a value",
+      steps: [
+        "Paste your JSON into the editor.",
+        "Search for the key or value in the Tree tab, or expand the branches until you see it.",
+        "Hover the row and press the link icon to copy its path, for example $.users[0].address.city.",
+      ],
+    },
+    sections: [
+      {
+        h: "Why you need the path",
+        p: "Reading a nested API response in code means addressing a value by its path: which keys to follow and which array indexes to use. Counting brackets by eye is error-prone, so selecting the value in a tree and copying its path avoids off-by-one mistakes.",
+      },
+      {
+        h: "From a path to a query",
+        p: "The copied path points at one specific value. To select many values at once, for example the name of every user, switch to the Query tab and replace the index with a wildcard: $.users[*].name.",
+      },
+    ],
+    faq: [{ q: "Which path format is copied?", a: "A JavaScript-style accessor starting with $, such as $.users[0].name. Keys that are not valid identifiers use bracket notation, for example $[\"first name\"]." }, ...COMMON_FAQ],
+    keywords: ["json path finder", "find json path", "json path online", "get json path"],
+  },
 ];
 
 /** Pages that exist besides the tools; they appear in the sitemap and footer. */
@@ -701,6 +765,9 @@ export const INFO_PAGES = [
 ] as const;
 
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "";
+/** Optional donation or sponsorship page. The footer link is hidden until this is set. */
+export const SUPPORT_URL = process.env.NEXT_PUBLIC_SUPPORT_URL ?? "";
+export const REPO_URL = "https://github.com/megezgen/jsonforge";
 
 export function pageUrl(slug: string) {
   return slug ? `${SITE_URL}/${slug}/` : `${SITE_URL}/`;

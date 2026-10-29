@@ -12,6 +12,7 @@ import {
   Keyboard,
   ListTree,
   Minimize2,
+  Search,
   ShieldCheck,
   Trash2,
   Upload,
@@ -21,6 +22,7 @@ import {
 import { CodeView } from "@/components/code-view";
 import { DiffView } from "@/components/diff-view";
 import { InputEditor } from "@/components/input-editor";
+import { QueryView } from "@/components/query-view";
 import { SchemaView } from "@/components/schema-view";
 import { StatusBar } from "@/components/status-bar";
 import { TextView } from "@/components/text-view";
@@ -273,6 +275,9 @@ export function JsonTool({
                 <TabsTrigger value="schema">
                   <ShieldCheck /> Schema
                 </TabsTrigger>
+                <TabsTrigger value="query">
+                  <Search /> Query
+                </TabsTrigger>
                 <TabsTrigger value="code">
                   <Code2 /> Code
                 </TabsTrigger>
@@ -290,6 +295,9 @@ export function JsonTool({
             </TabsContent>
             <TabsContent value="schema">
               <SchemaView />
+            </TabsContent>
+            <TabsContent value="query">
+              <QueryView />
             </TabsContent>
             <TabsContent value="code">
               <CodeView initialLang={initialCodeLang} />

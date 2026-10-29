@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { INFO_PAGES, PAGES, SITE_NAME } from "@/lib/site";
+import { INFO_PAGES, PAGES, REPO_URL, SITE_NAME, SUPPORT_URL } from "@/lib/site";
 
 export function SiteFooter() {
   return (
@@ -18,6 +18,14 @@ export function SiteFooter() {
               {p.label}
             </Link>
           ))}
+          <a href={REPO_URL} rel="noopener" className="hover:text-fg">
+            GitHub
+          </a>
+          {SUPPORT_URL && (
+            <a href={SUPPORT_URL} rel="noopener" className="hover:text-fg">
+              Support the project
+            </a>
+          )}
         </nav>
       </div>
       <p className="mx-auto mt-6 max-w-[1200px]">

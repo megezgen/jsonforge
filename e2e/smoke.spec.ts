@@ -79,6 +79,25 @@ test.describe("JSON Forge", () => {
     await expect(page.locator(".monaco-editor").nth(1)).toContainText("json-schema.org/draft/2020-12/schema", { timeout: 15000 });
   });
 
+  test("jsonpath tester evaluates recursive and filter expressions", async ({ page }) => {
+    await page.goto("/jsonpath-tester/");
+    await expect(status(page)).toContainText("Valid JSON");
+    const results = page.getByRole("region", { name: "JSONPath results" });
+    await page.getByLabel("JSONPath expression").fill("$..name");
+    await expect(results).toContainText("2 matches");
+    await expect(results).toContainText("$.author.name");
+    await page.getByLabel("JSONPath expression").fill("$..[?(@.active == true)]");
+    await expect(results).toContainText("$.author");
+    await page.getByLabel("JSONPath expression").fill("$..[?(");
+    await expect(results.locator(".text-danger")).toBeVisible();
+  });
+
+  test("footer links to the repository and hides the empty support link", async ({ page }) => {
+    await page.goto("/about/");
+    await expect(page.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", /github\.com\/megezgen\/jsonforge/);
+    await expect(page.getByRole("link", { name: "Support the project" })).toHaveCount(0);
+  });
+
   test("diff highlights changes", async ({ page }) => {
     await page.goto("/json-diff/");
     await page.getByLabel("Compare the editor content against this JSON:").fill('{"id": 2}');

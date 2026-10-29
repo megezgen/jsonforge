@@ -1,5 +1,6 @@
 import { Validator, type Schema, type SchemaDraft } from "@cfworker/json-schema";
 import { diffLines } from "diff";
+import { JSONPath } from "jsonpath-plus";
 import { jsonrepair } from "jsonrepair";
 import { generateCode } from "./codegen";
 import type {
@@ -12,6 +13,8 @@ import type {
   NodeType,
   ParseErrorInfo,
   ParseResult,
+  QueryItem,
+  QueryResult,
   SchemaIssue,
   SchemaResult,
   TreeRequest,
@@ -279,6 +282,41 @@ export function nodeCopy(id: string): NodeCopy {
 export function codegen(lang: CodeLang, rootName: string): string {
   if (!hasCurrent) throw new Error("No valid JSON loaded");
   return generateCode(current, lang, rootName);
+}
+
+// ---------- JSONPath query ----------
+
+const MAX_QUERY_ITEMS = 1000;
+
+export function queryPath(expression: string, withValues: boolean): QueryResult {
+  if (!hasCurrent) return { ok: false, error: "The JSON in the editor is empty or invalid." };
+  const expr = expression.trim();
+  if (!expr) return { ok: false, error: "Enter a JSONPath expression, for example $.users[*].name" };
+  try {
+    // "safe" uses a built-in expression parser, so no eval is needed (works under a strict CSP).
+    const hits = JSONPath({ path: expr, json: current as object, resultType: "all", eval: "safe", wrap: true }) as Array<{ pointer: string; value: unknown }>;
+    const items: QueryItem[] = [];
+    for (const h of hits.slice(0, MAX_QUERY_ITEMS)) {
+      let path = h.pointer || "$";
+      try {
+        path = resolve(h.pointer).path;
+      } catch {
+        /* keep the raw pointer */
+      }
+      const type = nodeType(h.value);
+      const container = type === "object" || type === "array";
+      const raw = JSON.stringify(h.value) ?? "undefined";
+      items.push({ path, pointer: h.pointer, type, preview: container ? (raw.length > 160 ? `${raw.slice(0, 160)}…` : raw) : preview(h.value) });
+    }
+    return {
+      ok: true,
+      total: hits.length,
+      items,
+      valuesJson: withValues ? JSON.stringify(hits.map((h) => h.value), null, 2) : null,
+    };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
 }
 
 // ---------- JSON Schema validation ----------

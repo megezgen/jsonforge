@@ -9,7 +9,8 @@ export type WorkerRequest =
   | { id: number; op: "node"; nodeId: string }
   | { id: number; op: "codegen"; lang: CodeLang; rootName: string }
   | { id: number; op: "diff"; left: string; right: string; sortKeys: boolean }
-  | { id: number; op: "schema"; schemaText: string };
+  | { id: number; op: "schema"; schemaText: string }
+  | { id: number; op: "query"; expression: string; withValues: boolean };
 
 export type WorkerResponse = { id: number; ok: true; result: unknown } | { id: number; ok: false; error: string };
 
@@ -47,6 +48,9 @@ scope.onmessage = (e) => {
         break;
       case "schema":
         result = engine.validateSchema(msg.schemaText);
+        break;
+      case "query":
+        result = engine.queryPath(msg.expression, msg.withValues);
         break;
     }
     scope.postMessage({ id: msg.id, ok: true, result });
