@@ -16,7 +16,7 @@ export function SiteHeader() {
     <header className="border-b border-line bg-panel">
       <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-7 items-center justify-center rounded-md bg-accent text-accentfg">
+          <span className="flex size-7 items-center justify-center rounded-md bg-accentbg text-accentfg">
             <Braces className="size-4" />
           </span>
           {SITE_NAME}

@@ -30,7 +30,10 @@ export default function Privacy() {
         ask for your consent before using non-essential cookies. Advertisers never receive the JSON you enter.
       </p>
       <h2>Analytics</h2>
-      <p>If we add privacy-friendly analytics, it will only measure page visits and will never include the content you process.</p>
+      <p>
+        We use Cloudflare Web Analytics, a privacy-friendly service that does not use cookies and does not track individual visitors across sites. It
+        measures page views and page performance (for example load times). It never receives the content you enter in the tools.
+      </p>
       <h2>Changes</h2>
       <p>We may update this policy and will change the date above when we do.</p>
       <ContactLine />

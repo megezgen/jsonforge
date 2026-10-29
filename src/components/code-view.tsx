@@ -61,7 +61,7 @@ export function CodeView({ initialLang = "typescript" }: { initialLang?: CodeLan
               aria-pressed={lang === l.id}
               className={cn(
                 "h-7 cursor-pointer rounded-md px-2.5 text-xs",
-                lang === l.id ? "bg-accent text-accentfg" : "text-muted hover:bg-panel2 hover:text-fg",
+                lang === l.id ? "bg-accentbg text-accentfg" : "text-muted hover:bg-panel2 hover:text-fg",
               )}
             >
               {l.label}

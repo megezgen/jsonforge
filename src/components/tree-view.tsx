@@ -62,7 +62,7 @@ const Row = memo(function Row({
           {open}
           {!row.expanded && (row.count > 0 ? "…" : "")}
           {(!row.expanded || row.count === 0) && close}
-          <span className="ml-2 text-[11px] opacity-70">
+          <span className="ml-2 text-[11px]">
             {formatNumber(row.count)} {row.type === "array" ? (row.count === 1 ? "item" : "items") : row.count === 1 ? "key" : "keys"}
           </span>
         </span>
