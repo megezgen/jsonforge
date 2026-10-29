@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Braces, ShieldCheck } from "lucide-react";
+import { Braces, Coffee, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { PAGES, SITE_NAME } from "@/lib/site";
+import { PAGES, SITE_NAME, SUPPORT_URL } from "@/lib/site";
 
 const NAV = PAGES.filter((p) => ["", "json-validator", "json-to-typescript", "json-diff"].includes(p.slug));
 const SHORT: Record<string, string> = {
@@ -33,6 +33,17 @@ export function SiteHeader() {
             <ShieldCheck className="size-3.5" />
             <span aria-hidden>🔒</span> 100% Client-Side: your data is never sent to a server
           </span>
+          {SUPPORT_URL && (
+            <a
+              href={SUPPORT_URL}
+              rel="noopener"
+              aria-label="Support JSON Forge"
+              className="flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-xs font-medium transition-colors hover:bg-panel2"
+            >
+              <Coffee className="size-3.5" />
+              <span className="hidden sm:inline">Support</span>
+            </a>
+          )}
           <ThemeToggle />
         </div>
       </div>

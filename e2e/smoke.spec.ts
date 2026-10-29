@@ -96,6 +96,7 @@ test.describe("JSON Forge", () => {
     await page.goto("/about/");
     await expect(page.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", /github\.com\/megezgen\/jsonforge/);
     await expect(page.getByRole("link", { name: "Support the project" })).toHaveAttribute("href", /buymeacoffee\.com\/jsonforgedev/);
+    await expect(page.getByRole("link", { name: "Support JSON Forge" })).toHaveAttribute("href", /buymeacoffee\.com\/jsonforgedev/);
   });
 
   test("diff highlights changes", async ({ page }) => {
