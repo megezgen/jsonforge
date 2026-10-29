@@ -41,6 +41,27 @@ test.describe("JSON Forge", () => {
     await expect(page.getByText("export interface Root")).toBeVisible();
   });
 
+  for (const [slug, expected] of [
+    ["json-to-zod", "z.object({"],
+    ["json-to-rust", "pub struct Root"],
+    ["json-to-java", "public record Root("],
+    ["json-to-yaml", "name: JSON Forge"],
+  ] as const) {
+    test(`${slug} generates output`, async ({ page }) => {
+      await page.goto(`/${slug}/`);
+      await expect(page.locator(".monaco-editor").nth(1)).toContainText(expected, { timeout: 15000 });
+    });
+  }
+
+  test("json-sorter sorts keys by default", async ({ page }) => {
+    await page.goto("/json-sorter/");
+    await setEditor(page, '{"b":1,"a":{"d":1,"c":2}}');
+    await expect(status(page)).toContainText("Valid JSON");
+    await page.keyboard.press("Control+Enter");
+    const editor = page.locator(".monaco-editor").first();
+    await expect(editor.locator(".view-line").nth(1)).toContainText('"a"');
+  });
+
   test("diff highlights changes", async ({ page }) => {
     await page.goto("/json-diff/");
     await page.getByLabel("Compare the editor content against this JSON:").fill('{"id": 2}');

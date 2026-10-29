@@ -311,6 +311,168 @@ function genPython(root: Schema, rootName: string): string {
   return `${PY_IMPORTS}\nfrom pydantic import BaseModel, Field\n\n\n${blocks.join("\n\n\n")}\n`;
 }
 
+// ---------- Zod ----------
+
+function zodType(s: Schema, names: Map<Schema, string>): string {
+  switch (s.k) {
+    case "string":
+      return "z.string()";
+    case "boolean":
+      return "z.boolean()";
+    case "integer":
+      return "z.number().int()";
+    case "number":
+      return "z.number()";
+    case "null":
+      return "z.null()";
+    case "unknown":
+      return "z.unknown()";
+    case "array":
+      return `z.array(${zodType(s.item, names)})`;
+    case "object":
+      return names.get(s) ?? "z.record(z.string(), z.unknown())";
+    case "union": {
+      const nonNull = s.items.filter((x) => x.k !== "null");
+      const nullable = nonNull.length !== s.items.length;
+      const inner = nonNull.length === 1 ? zodType(nonNull[0]!, names) : `z.union([${nonNull.map((x) => zodType(x, names)).join(", ")}])`;
+      return nullable ? `${inner}.nullable()` : inner;
+    }
+  }
+}
+
+function genZod(root: Schema, rootName: string): string {
+  const header = 'import { z } from "zod";\n\n';
+  if (root.k !== "object" && root.k !== "array") {
+    return `${header}export const ${pascalCase(rootName)} = ${zodType(root, new Map())};\n`;
+  }
+  const { named, byObject } = collect(root, rootName);
+  // Children first so every schema is defined before it is referenced.
+  const blocks = [...named].reverse().map(({ name, schema }) => {
+    const lines = [...schema.fields].map(([key, f]) => {
+      const k = TS_IDENT.test(key) ? key : JSON.stringify(key);
+      return `  ${k}: ${zodType(f.s, byObject)}${f.optional ? ".optional()" : ""},`;
+    });
+    return `export const ${name} = z.object({\n${lines.join("\n")}\n});\nexport type ${name} = z.infer<typeof ${name}>;`;
+  });
+  if (root.k === "array") {
+    const n = `${pascalCase(rootName)}List`;
+    blocks.push(`export const ${n} = ${zodType(root, byObject)};\nexport type ${n} = z.infer<typeof ${n}>;`);
+  }
+  return header + blocks.join("\n\n") + "\n";
+}
+
+// ---------- Rust (serde) ----------
+
+const RUST_KEYWORDS = new Set(["as", "break", "const", "continue", "crate", "else", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return", "self", "static", "struct", "super", "trait", "true", "type", "unsafe", "use", "where", "while", "async", "await", "dyn"]);
+
+function rustField(key: string): { name: string; rename: boolean } {
+  let name = snakeCase(key) || "field";
+  if (/^[0-9]/.test(name)) name = `f_${name}`;
+  if (RUST_KEYWORDS.has(name)) name = `${name}_`;
+  return { name, rename: name !== key };
+}
+
+function rustType(s: Schema, names: Map<Schema, string>): string {
+  switch (s.k) {
+    case "string":
+      return "String";
+    case "boolean":
+      return "bool";
+    case "integer":
+      return "i64";
+    case "number":
+      return "f64";
+    case "null":
+    case "unknown":
+      return "serde_json::Value";
+    case "array":
+      return `Vec<${rustType(s.item, names)}>`;
+    case "object":
+      return names.get(s) ?? "serde_json::Value";
+    case "union": {
+      const nonNull = s.items.filter((x) => x.k !== "null");
+      if (nonNull.length === 1) return `Option<${rustType(nonNull[0]!, names)}>`;
+      return "serde_json::Value";
+    }
+  }
+}
+
+function genRust(root: Schema, rootName: string): string {
+  const header = "use serde::{Deserialize, Serialize};\n\n";
+  if (root.k !== "object" && root.k !== "array") {
+    return `${header}pub type ${pascalCase(rootName)} = ${rustType(root, new Map())};\n`;
+  }
+  const { named, byObject } = collect(root, rootName);
+  const blocks = named.map(({ name, schema }) => {
+    const lines = [...schema.fields].flatMap(([key, f]) => {
+      const { name: fname, rename } = rustField(key);
+      let t = rustType(f.s, byObject);
+      const optional = f.optional && !t.startsWith("Option<");
+      if (optional) t = `Option<${t}>`;
+      const attrs: string[] = [];
+      if (rename) attrs.push(`rename = ${JSON.stringify(key)}`);
+      if (t.startsWith("Option<")) attrs.push('default, skip_serializing_if = "Option::is_none"');
+      return [...(attrs.length ? [`    #[serde(${attrs.join(", ")})]`] : []), `    pub ${fname}: ${t},`];
+    });
+    return `#[derive(Debug, Clone, Serialize, Deserialize)]\npub struct ${name} {\n${lines.join("\n")}\n}`;
+  });
+  if (root.k === "array") blocks.push(`pub type ${pascalCase(rootName)}List = ${rustType(root, byObject)};`);
+  return header + blocks.join("\n\n") + "\n";
+}
+
+// ---------- Java (records + Jackson) ----------
+
+const JAVA_RESERVED = new Set(["abstract", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while", "record", "var"]);
+
+function javaField(key: string): { name: string; rename: boolean } {
+  const parts = words(key);
+  let name = parts.map((w, i) => (i === 0 ? w.charAt(0).toLowerCase() + w.slice(1) : cap(w))).join("") || "field";
+  if (/^[0-9]/.test(name)) name = `f${name}`;
+  if (JAVA_RESERVED.has(name)) name = `${name}_`;
+  return { name, rename: name !== key };
+}
+
+function javaType(s: Schema, names: Map<Schema, string>): string {
+  switch (s.k) {
+    case "string":
+      return "String";
+    case "boolean":
+      return "Boolean";
+    case "integer":
+      return "Long";
+    case "number":
+      return "Double";
+    case "null":
+    case "unknown":
+      return "Object";
+    case "array":
+      return `List<${javaType(s.item, names)}>`;
+    case "object":
+      return names.get(s) ?? "Map<String, Object>";
+    case "union": {
+      const nonNull = s.items.filter((x) => x.k !== "null");
+      return nonNull.length === 1 ? javaType(nonNull[0]!, names) : "Object";
+    }
+  }
+}
+
+function genJava(root: Schema, rootName: string): string {
+  const header = "import com.fasterxml.jackson.annotation.JsonProperty;\nimport java.util.List;\nimport java.util.Map;\n\n";
+  if (root.k !== "object" && root.k !== "array") {
+    return `// A JSON ${root.k} has no class representation; use ${javaType(root, new Map())} directly.\n`;
+  }
+  const { named, byObject } = collect(root, rootName);
+  const blocks = named.map(({ name, schema }) => {
+    const fields = [...schema.fields].map(([key, f]) => {
+      const { name: fname, rename } = javaField(key);
+      const t = javaType(f.s, byObject);
+      return `    ${rename ? `@JsonProperty(${JSON.stringify(key)}) ` : ""}${t} ${fname}`;
+    });
+    return `public record ${name}(\n${fields.join(",\n")}\n) {}`;
+  });
+  return header + blocks.join("\n\n") + "\n";
+}
+
 export function generateCode(value: unknown, lang: CodeLang, rootName = "Root"): string {
   if (lang === "yaml") return toYaml(value);
   if (lang === "csv") return toCsv(value);
@@ -323,5 +485,11 @@ export function generateCode(value: unknown, lang: CodeLang, rootName = "Root"):
       return genGo(schema, rootName);
     case "python":
       return genPython(schema, rootName);
+    case "zod":
+      return genZod(schema, rootName);
+    case "rust":
+      return genRust(schema, rootName);
+    case "java":
+      return genJava(schema, rootName);
   }
 }

@@ -15,7 +15,7 @@ export function ToolPageView({ page }: { page: ToolPage }) {
       </div>
       <AdSlot size="leaderboard" className="mb-2" />
       <main>
-        <JsonTool initialTab={page.tab} initialCodeLang={page.lang} initialIndent={page.indent} />
+        <JsonTool initialTab={page.tab} initialCodeLang={page.lang} initialIndent={page.indent} initialSortKeys={page.sortKeys} />
         <SeoContent page={page} />
       </main>
       <SiteFooter />

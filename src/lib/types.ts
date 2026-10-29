@@ -49,7 +49,7 @@ export interface TreeResponse {
 
 export type IndentOption = "2" | "4" | "compact";
 
-export type CodeLang = "typescript" | "go" | "python" | "yaml" | "csv" | "xml";
+export type CodeLang = "typescript" | "go" | "python" | "zod" | "rust" | "java" | "yaml" | "csv" | "xml";
 
 export interface DiffLine {
   kind: "add" | "del" | "same";

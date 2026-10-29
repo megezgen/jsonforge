@@ -18,6 +18,7 @@ export interface ToolPage {
   tab: OutputTab;
   lang?: CodeLang;
   indent?: IndentOption;
+  sortKeys?: boolean;
   /** Extra unique prose rendered below the how-to. */
   sections?: { h: string; p: string }[];
   howTo: { title: string; steps: string[] };
@@ -423,6 +424,211 @@ export const PAGES: ToolPage[] = [
     ],
     faq: [{ q: "Are attributes supported?", a: "No. Every value becomes element text, which keeps the conversion predictable and reversible." }, ...COMMON_FAQ],
     keywords: ["json to xml", "convert json to xml", "json xml converter"],
+  },
+  {
+    slug: "large-json-viewer",
+    title: "Large JSON Viewer Online: Open 20MB+ Files Without Freezing",
+    description: "View very large JSON files online without lag. Background parsing and a virtualized tree handle 20MB+ documents, and nothing is uploaded.",
+    h1: "Large JSON Viewer",
+    intro: "Open multi-megabyte JSON files that make other online viewers freeze. Parsing runs in a background thread and only the visible tree rows are drawn.",
+    tab: "tree",
+    howTo: {
+      title: "How to open a large JSON file",
+      steps: [
+        "Press Open and choose your file, or drag it onto the editor. You can also use Load Sample, then Large, to try a 20 MB example.",
+        "Wait for the status bar to show Valid JSON with the size, depth and node count.",
+        "Collapse everything, then expand only the branch you need, or use search to jump to a key or value.",
+      ],
+    },
+    sections: [
+      {
+        h: "Why big JSON files freeze most viewers",
+        p: "Most tools parse on the main browser thread and build a DOM element for every node. A file with a million nodes means a million elements, which locks the page. This viewer parses in a Web Worker and renders only the few dozen rows that fit on screen, so scrolling stays smooth whatever the file size.",
+      },
+      {
+        h: "What to expect with huge files",
+        p: "Parsing a 20 MB document typically takes about a second on a modern laptop. For very large inputs the editor switches to a lighter mode without minimap or language services. The tree view lists at most 250,000 rows at once; if you expand everything on a bigger file, collapse some branches or use search to narrow it down.",
+      },
+      {
+        h: "Your data stays on your device",
+        p: "Large files often contain real production exports, logs or customer data. Nothing is uploaded: the file is read by your browser and processed locally, so you can inspect sensitive dumps without sending them to a third party.",
+      },
+    ],
+    faq: [
+      { q: "What is the maximum file size?", a: "There is no fixed limit; the practical limit is your browser memory. Files above 20 MB open on typical machines. Very large files may take a few seconds to parse." },
+      { q: "Can I search inside a large file?", a: "Yes. The Tree tab search matches keys and values, shows the number of matches and opens the path to each one." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["large json viewer", "open large json file", "big json viewer", "json viewer for large files"],
+  },
+  {
+    slug: "json-tree-viewer",
+    title: "JSON Tree Viewer Online: Explore JSON as an Expandable Tree",
+    description: "Explore JSON as a collapsible tree with colour-coded types, search and one-click copy of values and paths. Free and 100% client-side.",
+    h1: "JSON Tree Viewer",
+    intro: "See any JSON document as an expandable tree. Objects and arrays fold and unfold, types are colour coded and every node shows how many children it has.",
+    tab: "tree",
+    howTo: {
+      title: "How to use the JSON tree viewer",
+      steps: [
+        "Paste JSON into the editor. The tree on the right updates as you type.",
+        "Click a row to expand or collapse it. Use Expand and Collapse to open or fold the whole document.",
+        "Hover a row and use the icons to copy the value or its path, for example $.users[0].name.",
+      ],
+    },
+    sections: [
+      {
+        h: "Reading the tree",
+        p: "Each row shows a key and its value. Objects show the number of keys and arrays show the number of items, so you can judge the size of a branch without opening it. Array items are labelled with their index, which is the number you need in a path expression.",
+      },
+      {
+        h: "Search and copy paths",
+        p: "Type in the search box to filter the tree to rows whose key or value matches; parents of every match open automatically. Copying a path gives you a JavaScript-style accessor you can paste into code, or into a JSONPath tool, to read the same value programmatically.",
+      },
+    ],
+    faq: [
+      { q: "Can I edit values in the tree?", a: "The tree is read-only. Edit the JSON in the editor on the left and the tree updates immediately." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["json tree viewer", "json tree view online", "json viewer tree", "expandable json viewer"],
+  },
+  {
+    slug: "json-file-viewer",
+    title: "JSON File Viewer Online: Open and Read .json Files Privately",
+    description: "Open a .json file from your computer and read it as a tree or formatted text. The file is never uploaded; everything runs in your browser.",
+    h1: "JSON File Viewer",
+    intro: "Open a .json file straight from your computer, or drag it onto the editor, and read it as a tree or as formatted text. The file never leaves your device.",
+    tab: "tree",
+    howTo: {
+      title: "How to open a JSON file",
+      steps: [
+        "Press Open and pick a .json file, or drag the file onto the editor.",
+        "Read the structure in the Tree tab, or switch to Formatted for indented text.",
+        "Use Download to save a formatted or minified copy.",
+      ],
+    },
+    sections: [
+      {
+        h: "Opening files without uploading them",
+        p: "The file is read with your browser's file API and handed to the same in-page engine used for pasted text. There is no upload step, no server and no copy of your data kept anywhere else, which is what you want for exports, backups and configuration files.",
+      },
+      {
+        h: "Files that will not open",
+        p: "If the file is not valid JSON the status bar shows the error with its line and column. Common causes are a byte-order mark, trailing commas, comments, or several JSON documents in one file (JSON Lines). Use Fix JSON for the first three; for JSON Lines, paste a single line at a time.",
+      },
+    ],
+    faq: [
+      { q: "Which file types are supported?", a: "Any text file that contains valid JSON, usually .json. Plain .txt files work too." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["json file viewer", "open json file online", "json file reader", "view json file"],
+  },
+  {
+    slug: "json-sorter",
+    title: "JSON Sorter Online: Sort JSON Keys Alphabetically",
+    description: "Sort JSON object keys alphabetically at every level. Great for clean diffs and consistent config files. Free, instant and 100% client-side.",
+    h1: "JSON Sorter",
+    intro: "Sort the keys of every object in your JSON alphabetically, at every level of nesting. Array order is left untouched.",
+    tab: "text",
+    sortKeys: true,
+    howTo: {
+      title: "How to sort JSON keys",
+      steps: [
+        "Paste your JSON into the editor.",
+        "Keep Sort keys ticked in the Formatted tab, which is on by default on this page.",
+        "Press Format to write the sorted JSON back into the editor, or copy it from the Formatted tab.",
+      ],
+    },
+    sections: [
+      {
+        h: "Why sort keys?",
+        p: "JSON objects have no defined order, so reordering keys never changes the meaning of the data. Sorting makes files deterministic: the same data always produces the same text, so version-control diffs only show real changes and two exports compare equal.",
+      },
+      {
+        h: "What is and is not sorted",
+        p: "Object keys are sorted alphabetically (by code unit order) at every depth. Arrays keep their original order, because order is meaningful in an array. Values are not modified.",
+      },
+    ],
+    faq: [
+      { q: "Does sorting change my data?", a: "No. Only the order of keys inside objects changes. Values and array order stay the same." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["json sorter", "sort json keys", "sort json online", "alphabetize json"],
+  },
+  {
+    slug: "json-to-zod",
+    title: "JSON to Zod Schema Generator Online",
+    description: "Generate Zod schemas and inferred TypeScript types from JSON. Handles nested objects, arrays, optional and nullable fields. Runs in your browser.",
+    h1: "JSON to Zod",
+    intro: "Turn a JSON sample into Zod schemas plus inferred TypeScript types, ready to validate API responses at runtime.",
+    tab: "code",
+    lang: "zod",
+    howTo: {
+      title: "How to convert JSON to a Zod schema",
+      steps: ["Paste a representative JSON sample into the editor.", "Open the Code tab and choose Zod.", "Copy the schemas and call Root.parse(data) to validate real data."],
+    },
+    sections: [
+      {
+        h: "Runtime validation, not just types",
+        p: "TypeScript interfaces disappear at runtime, so they cannot check what an API actually returns. A Zod schema validates the data and gives you the matching static type through z.infer, so one definition covers both compile time and runtime.",
+      },
+      {
+        h: "How fields are mapped",
+        p: "Whole numbers become z.number().int(), values that can be null get .nullable(), and keys missing from some objects get .optional(). Nested objects become their own named schemas, defined before they are used.",
+      },
+    ],
+    faq: [{ q: "Which Zod version does the output target?", a: "The schemas use APIs that are the same in Zod 3 and Zod 4: z.object, z.array, z.union, z.number().int(), nullable and optional." }, ...COMMON_FAQ],
+    keywords: ["json to zod", "zod schema generator", "generate zod from json"],
+  },
+  {
+    slug: "json-to-rust",
+    title: "JSON to Rust Struct Generator (serde)",
+    description: "Convert JSON to Rust structs with serde Serialize and Deserialize derives. Handles nested objects, Option fields and renamed keys. Runs in your browser.",
+    h1: "JSON to Rust",
+    intro: "Generate Rust structs with serde derives from a JSON sample. Keys are converted to snake_case and renamed back with serde attributes.",
+    tab: "code",
+    lang: "rust",
+    howTo: {
+      title: "How to convert JSON to Rust structs",
+      steps: ["Paste your JSON into the editor.", "Open the Code tab and choose Rust.", "Copy the structs and deserialize with serde_json::from_str."],
+    },
+    sections: [
+      {
+        h: "serde attributes explained",
+        p: "Rust field names are snake_case, so a key such as userId becomes user_id with #[serde(rename = \"userId\")]. Optional and nullable fields become Option<T> with default and skip_serializing_if, so missing keys parse and None values are omitted when serializing.",
+      },
+      {
+        h: "Types used",
+        p: "Strings are String, whole numbers i64, decimals f64 and booleans bool. Arrays become Vec<T>. Values whose type cannot be pinned down, such as mixed types or bare null, fall back to serde_json::Value.",
+      },
+    ],
+    faq: [{ q: "Do I need extra crates?", a: "Yes: serde with the derive feature and serde_json, for example cargo add serde --features derive and cargo add serde_json." }, ...COMMON_FAQ],
+    keywords: ["json to rust", "json to rust struct", "serde struct generator"],
+  },
+  {
+    slug: "json-to-java",
+    title: "JSON to Java Class (Record) Generator Online",
+    description: "Convert JSON to Java records with Jackson annotations. Handles nested objects, lists and renamed keys. Free and processed in your browser.",
+    h1: "JSON to Java",
+    intro: "Generate Java records with Jackson @JsonProperty annotations from a JSON sample. Nested objects become their own records and arrays become List<T>.",
+    tab: "code",
+    lang: "java",
+    howTo: {
+      title: "How to convert JSON to Java classes",
+      steps: ["Paste your JSON into the editor.", "Open the Code tab and choose Java.", "Copy the records into your project and read data with ObjectMapper.readValue."],
+    },
+    sections: [
+      {
+        h: "Records instead of boilerplate classes",
+        p: "Java 16 and newer support records, which give you an immutable class with constructor, accessors, equals and hashCode in one line. They work with Jackson 2.12 and later, so the output stays short and readable.",
+      },
+      {
+        h: "Type mapping",
+        p: "Strings become String, whole numbers Long, decimals Double and booleans Boolean, using boxed types so missing values can be null. Arrays become List<T>. Mixed or unknown values fall back to Object. Keys that are not valid camelCase Java identifiers are renamed and annotated with @JsonProperty.",
+      },
+    ],
+    faq: [{ q: "Which Java version is required?", a: "Java 16 or later for records, and Jackson 2.12 or later to deserialize them." }, ...COMMON_FAQ],
+    keywords: ["json to java", "json to java class", "json to pojo", "json to java record"],
   },
 ];
 

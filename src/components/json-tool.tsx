@@ -218,21 +218,25 @@ export function JsonTool({
   initialTab = "tree",
   initialCodeLang = "typescript",
   initialIndent = "2",
+  initialSortKeys = false,
 }: {
   initialTab?: OutputTab;
   initialCodeLang?: CodeLang;
   initialIndent?: IndentOption;
+  initialSortKeys?: boolean;
 }) {
   useShortcuts();
   const activeTab = useApp((s) => s.activeTab);
   const setActiveTab = useApp((s) => s.setActiveTab);
   const setIndent = useApp((s) => s.setIndent);
+  const setSortKeys = useApp((s) => s.setSortKeys);
   const { pct, container, onPointerDown } = useSplit();
 
   useEffect(() => {
     setActiveTab(initialTab);
     setIndent(initialIndent);
-  }, [initialTab, initialIndent, setActiveTab, setIndent]);
+    setSortKeys(initialSortKeys);
+  }, [initialTab, initialIndent, initialSortKeys, setActiveTab, setIndent, setSortKeys]);
 
   return (
     <section aria-label="JSON editor" className="flex h-[900px] lg:h-[max(560px,calc(100dvh-10rem))] flex-col overflow-hidden border-y border-line bg-bg">
