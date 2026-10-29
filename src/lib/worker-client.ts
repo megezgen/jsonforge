@@ -5,6 +5,7 @@ import type {
   IndentOption,
   NodeCopy,
   ParseResult,
+  SchemaResult,
   TreeRequest,
   TreeResponse,
 } from "./types";
@@ -50,4 +51,5 @@ export const engine = {
   node: (nodeId: string) => call<NodeCopy>({ op: "node", nodeId }),
   codegen: (lang: CodeLang, rootName: string) => call<string>({ op: "codegen", lang, rootName }),
   diff: (left: string, right: string, sortKeys: boolean) => call<DiffResponse>({ op: "diff", left, right, sortKeys }),
+  schema: (schemaText: string) => call<SchemaResult>({ op: "schema", schemaText }),
 };

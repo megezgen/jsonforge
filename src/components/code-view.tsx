@@ -13,6 +13,7 @@ const LANGS: { id: CodeLang; label: string; monaco: string }[] = [
   { id: "go", label: "Go", monaco: "go" },
   { id: "python", label: "Python (Pydantic)", monaco: "python" },
   { id: "zod", label: "Zod", monaco: "typescript" },
+  { id: "jsonschema", label: "JSON Schema", monaco: "json" },
   { id: "rust", label: "Rust", monaco: "rust" },
   { id: "java", label: "Java", monaco: "java" },
   { id: "yaml", label: "YAML", monaco: "yaml" },

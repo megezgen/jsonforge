@@ -8,7 +8,8 @@ export type WorkerRequest =
   | { id: number; op: "tree"; req: TreeRequest }
   | { id: number; op: "node"; nodeId: string }
   | { id: number; op: "codegen"; lang: CodeLang; rootName: string }
-  | { id: number; op: "diff"; left: string; right: string; sortKeys: boolean };
+  | { id: number; op: "diff"; left: string; right: string; sortKeys: boolean }
+  | { id: number; op: "schema"; schemaText: string };
 
 export type WorkerResponse = { id: number; ok: true; result: unknown } | { id: number; ok: false; error: string };
 
@@ -43,6 +44,9 @@ scope.onmessage = (e) => {
         break;
       case "diff":
         result = engine.diff(msg.left, msg.right, msg.sortKeys);
+        break;
+      case "schema":
+        result = engine.validateSchema(msg.schemaText);
         break;
     }
     scope.postMessage({ id: msg.id, ok: true, result });

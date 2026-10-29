@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { IndentOption, JsonStats, ParseErrorInfo } from "@/lib/types";
 
-export type OutputTab = "tree" | "text" | "diff" | "code";
+export type OutputTab = "tree" | "text" | "diff" | "schema" | "code";
 export type Status = "empty" | "parsing" | "valid" | "invalid";
 
 export interface Notice {
@@ -22,6 +22,7 @@ interface AppState {
   indent: IndentOption;
   sortKeys: boolean;
   compareText: string;
+  schemaText: string;
   codeOutput: string;
   notice: Notice | null;
   theme: "dark" | "light";
@@ -32,6 +33,7 @@ interface AppState {
   setIndent: (i: IndentOption) => void;
   setSortKeys: (b: boolean) => void;
   setCompareText: (t: string) => void;
+  setSchemaText: (t: string) => void;
   setCodeOutput: (t: string) => void;
   notify: (kind: Notice["kind"], text: string) => void;
   clearNotice: () => void;
@@ -50,6 +52,7 @@ export const useApp = create<AppState>((set) => ({
   indent: "2",
   sortKeys: false,
   compareText: "",
+  schemaText: "",
   codeOutput: "",
   notice: null,
   theme: "dark",
@@ -60,6 +63,7 @@ export const useApp = create<AppState>((set) => ({
   setIndent: (indent) => set({ indent }),
   setSortKeys: (sortKeys) => set({ sortKeys }),
   setCompareText: (compareText) => set({ compareText }),
+  setSchemaText: (schemaText) => set({ schemaText }),
   setCodeOutput: (codeOutput) => set({ codeOutput }),
   notify: (kind, text) => set({ notice: { id: ++noticeId, kind, text } }),
   clearNotice: () => set({ notice: null }),

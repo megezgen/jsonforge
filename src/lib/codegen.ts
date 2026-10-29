@@ -473,7 +473,51 @@ function genJava(root: Schema, rootName: string): string {
   return header + blocks.join("\n\n") + "\n";
 }
 
+// ---------- JSON Schema ----------
+
+type JsonSchemaNode = Record<string, unknown>;
+
+function toJsonSchema(s: Schema): JsonSchemaNode {
+  switch (s.k) {
+    case "string":
+    case "boolean":
+    case "null":
+    case "integer":
+    case "number":
+      return { type: s.k };
+    case "unknown":
+      return {};
+    case "array":
+      return { type: "array", items: toJsonSchema(s.item) };
+    case "object": {
+      const properties: Record<string, JsonSchemaNode> = {};
+      const required: string[] = [];
+      for (const [key, f] of s.fields) {
+        properties[key] = toJsonSchema(f.s);
+        if (!f.optional) required.push(key);
+      }
+      return { type: "object", properties, ...(required.length ? { required } : {}) };
+    }
+    case "union": {
+      const nodes = s.items.map(toJsonSchema);
+      const simple = nodes.every((n) => typeof n.type === "string" && Object.keys(n).length === 1);
+      if (simple) {
+        const types = [...new Set(nodes.map((n) => n.type as string))];
+        // "integer" is already covered by "number".
+        return { type: types.includes("number") ? types.filter((t) => t !== "integer") : types };
+      }
+      return { anyOf: nodes };
+    }
+  }
+}
+
+function genJsonSchema(root: Schema): string {
+  const node = { $schema: "https://json-schema.org/draft/2020-12/schema", ...toJsonSchema(root) };
+  return `${JSON.stringify(node, null, 2)}\n`;
+}
+
 export function generateCode(value: unknown, lang: CodeLang, rootName = "Root"): string {
+  if (lang === "jsonschema") return genJsonSchema(infer(value));
   if (lang === "yaml") return toYaml(value);
   if (lang === "csv") return toCsv(value);
   if (lang === "xml") return toXml(value, rootName === "Root" ? "root" : rootName);

@@ -1,3 +1,4 @@
+import { Validator, type Schema, type SchemaDraft } from "@cfworker/json-schema";
 import { diffLines } from "diff";
 import { jsonrepair } from "jsonrepair";
 import { generateCode } from "./codegen";
@@ -11,6 +12,8 @@ import type {
   NodeType,
   ParseErrorInfo,
   ParseResult,
+  SchemaIssue,
+  SchemaResult,
   TreeRequest,
   TreeResponse,
   TreeRow,
@@ -276,6 +279,55 @@ export function nodeCopy(id: string): NodeCopy {
 export function codegen(lang: CodeLang, rootName: string): string {
   if (!hasCurrent) throw new Error("No valid JSON loaded");
   return generateCode(current, lang, rootName);
+}
+
+// ---------- JSON Schema validation ----------
+
+const MAX_SCHEMA_ISSUES = 500;
+
+function draftOf(schema: unknown): SchemaDraft {
+  const url = schema !== null && typeof schema === "object" ? String((schema as Record<string, unknown>).$schema ?? "") : "";
+  if (url.includes("draft-04")) return "4";
+  if (url.includes("draft-07") || url.includes("draft-06") || url.includes("draft-03")) return "7";
+  if (url.includes("2019-09")) return "2019-09";
+  return "2020-12";
+}
+
+export function validateSchema(schemaText: string): SchemaResult {
+  if (!hasCurrent) return { ok: false, error: "The JSON in the editor is empty or invalid." };
+  let schema: unknown;
+  try {
+    schema = JSON.parse(schemaText);
+  } catch (err) {
+    return { ok: false, error: `The schema is not valid JSON: ${err instanceof Error ? err.message : String(err)}` };
+  }
+  if (schema === null || (typeof schema !== "object" && typeof schema !== "boolean")) {
+    return { ok: false, error: "A JSON Schema must be an object or a boolean." };
+  }
+  const draft = draftOf(schema);
+  try {
+    const validator = new Validator(schema as Schema, draft, false);
+    const result = validator.validate(current);
+    const seen = new Set<string>();
+    const issues: SchemaIssue[] = [];
+    for (const e of result.errors) {
+      const key = `${e.instanceLocation}|${e.keyword}|${e.error}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // Instance locations look like "#/users/0/name"; the tree uses the same pointer without the "#".
+      const pointer = e.instanceLocation.replace(/^#/, "");
+      let path = pointer || "$";
+      try {
+        path = resolve(pointer).path;
+      } catch {
+        /* keep the raw pointer if it cannot be resolved */
+      }
+      issues.push({ path, pointer, keyword: e.keyword, message: e.error });
+    }
+    return { ok: true, valid: result.valid, issues: issues.slice(0, MAX_SCHEMA_ISSUES), total: issues.length, draft };
+  } catch (err) {
+    return { ok: false, error: `The schema could not be used: ${err instanceof Error ? err.message : String(err)}` };
+  }
 }
 
 // ---------- diff ----------

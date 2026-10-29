@@ -12,6 +12,7 @@ import {
   Keyboard,
   ListTree,
   Minimize2,
+  ShieldCheck,
   Trash2,
   Upload,
   Wand2,
@@ -20,6 +21,7 @@ import {
 import { CodeView } from "@/components/code-view";
 import { DiffView } from "@/components/diff-view";
 import { InputEditor } from "@/components/input-editor";
+import { SchemaView } from "@/components/schema-view";
 import { StatusBar } from "@/components/status-bar";
 import { TextView } from "@/components/text-view";
 import { Toaster } from "@/components/toaster";
@@ -268,6 +270,9 @@ export function JsonTool({
                 <TabsTrigger value="diff">
                   <GitCompare /> Diff
                 </TabsTrigger>
+                <TabsTrigger value="schema">
+                  <ShieldCheck /> Schema
+                </TabsTrigger>
                 <TabsTrigger value="code">
                   <Code2 /> Code
                 </TabsTrigger>
@@ -282,6 +287,9 @@ export function JsonTool({
             </TabsContent>
             <TabsContent value="diff">
               <DiffView />
+            </TabsContent>
+            <TabsContent value="schema">
+              <SchemaView />
             </TabsContent>
             <TabsContent value="code">
               <CodeView initialLang={initialCodeLang} />

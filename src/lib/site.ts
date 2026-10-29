@@ -133,7 +133,7 @@ export const PAGES: ToolPage[] = [
       },
       {
         q: "Does the validator support JSON Schema?",
-        a: "This tool checks JSON syntax. Schema validation is not included yet.",
+        a: "Yes. Open the Schema tab, paste a JSON Schema (or generate one from your data) and the editor content is validated against it, with the path and reason for every problem. See the JSON Schema Validator page for details.",
       },
       ...COMMON_FAQ,
     ],
@@ -629,6 +629,67 @@ export const PAGES: ToolPage[] = [
     ],
     faq: [{ q: "Which Java version is required?", a: "Java 16 or later for records, and Jackson 2.12 or later to deserialize them." }, ...COMMON_FAQ],
     keywords: ["json to java", "json to java class", "json to pojo", "json to java record"],
+  },
+  {
+    slug: "json-schema-validator",
+    title: "JSON Schema Validator Online: Validate JSON Against a Schema",
+    description: "Validate JSON against a JSON Schema online. Supports draft-04, draft-07, 2019-09 and 2020-12, lists every problem with its path, and runs in your browser.",
+    h1: "JSON Schema Validator",
+    intro: "Check JSON against a JSON Schema and see every problem with the exact path and reason. Draft-04, draft-07, 2019-09 and 2020-12 are supported, and nothing leaves your browser.",
+    tab: "schema",
+    howTo: {
+      title: "How to validate JSON against a schema",
+      steps: [
+        "Paste your JSON into the editor on the left.",
+        "In the Schema tab, paste your JSON Schema, or press Generate from JSON to start from a schema inferred from your data.",
+        "Read the result: a green message when the JSON is valid, or a list of problems, each with its path such as $.users[0].age and the failing keyword.",
+      ],
+    },
+    sections: [
+      {
+        h: "Which drafts are supported?",
+        p: "The validator reads the $schema keyword to pick the draft: draft-04, draft-07 (also used for draft-06), 2019-09 and 2020-12. Without a $schema keyword it assumes 2020-12. The schema itself must be valid JSON.",
+      },
+      {
+        h: "Reading validation errors",
+        p: "Each problem shows the location of the failing value and the keyword that failed, for example required, type, minimum or additionalProperties, followed by a plain message. When one value breaks several rules you will see one entry per rule, so you can fix them all in one pass.",
+      },
+      {
+        h: "Start from a generated schema",
+        p: "Generate from JSON infers a schema from your data: property types, required keys (keys present in every object of an array) and array item types. It is a starting point; tighten it by adding keywords such as minLength, enum, pattern or format.",
+      },
+    ],
+    faq: [
+      { q: "Does it support $ref?", a: "Local references inside the same schema, such as #/$defs/address, are supported. Remote references are not fetched, because the tool never makes network requests with your data." },
+      { q: "Is format validation included?", a: "Common formats such as email, date-time, uri and uuid are checked." },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["json schema validator", "validate json against schema", "json schema online", "json schema checker"],
+  },
+  {
+    slug: "json-to-json-schema",
+    title: "JSON to JSON Schema Generator Online",
+    description: "Generate a JSON Schema (draft 2020-12) from sample JSON. Infers types, required properties and array items. Free and 100% client-side.",
+    h1: "JSON to JSON Schema",
+    intro: "Infer a JSON Schema from a JSON sample: property types, required keys and array item types, ready to refine and use for validation.",
+    tab: "code",
+    lang: "jsonschema",
+    howTo: {
+      title: "How to generate a JSON Schema from JSON",
+      steps: ["Paste a representative JSON sample into the editor.", "Open the Code tab and choose JSON Schema.", "Copy the schema, or open the Schema tab to validate your data against it."],
+    },
+    sections: [
+      {
+        h: "What the generator infers",
+        p: "Strings, numbers, integers, booleans and null map to their JSON Schema types. Objects become type object with properties; a key is listed as required only if it appears in every object seen. Arrays get an items schema merged from all elements, and mixed value types become a type list or anyOf.",
+      },
+      {
+        h: "Make the schema stricter",
+        p: "A schema inferred from one sample describes that sample, not your intent. Add constraints by hand: minimum and maximum for numbers, enum for fixed sets, pattern or format for strings, and additionalProperties set to false to reject unknown keys.",
+      },
+    ],
+    faq: [{ q: "Which draft does the output use?", a: "Draft 2020-12, declared with the $schema keyword. The keywords used (type, properties, required, items, anyOf) work in older drafts too." }, ...COMMON_FAQ],
+    keywords: ["json to json schema", "generate json schema from json", "json schema generator", "infer json schema"],
   },
 ];
 

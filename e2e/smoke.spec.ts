@@ -62,6 +62,23 @@ test.describe("JSON Forge", () => {
     await expect(editor.locator(".view-line").nth(1)).toContainText('"a"');
   });
 
+  test("schema tab reports problems and accepts a generated schema", async ({ page }) => {
+    await page.goto("/json-schema-validator/");
+    await expect(status(page)).toContainText("Valid JSON");
+    await page.getByLabel("Validate the editor content against this JSON Schema:").fill('{"type":"object","required":["missing"],"properties":{"id":{"type":"string"}}}');
+    const result = page.getByRole("region", { name: "Schema validation result" });
+    await expect(result).toContainText("problems found");
+    await expect(result).toContainText("required");
+    await expect(result).toContainText("$.id");
+    await page.getByRole("button", { name: /Generate from JSON/ }).click();
+    await expect(result).toContainText("Valid: the JSON matches the schema");
+  });
+
+  test("json-to-json-schema generates a schema", async ({ page }) => {
+    await page.goto("/json-to-json-schema/");
+    await expect(page.locator(".monaco-editor").nth(1)).toContainText("json-schema.org/draft/2020-12/schema", { timeout: 15000 });
+  });
+
   test("diff highlights changes", async ({ page }) => {
     await page.goto("/json-diff/");
     await page.getByLabel("Compare the editor content against this JSON:").fill('{"id": 2}');

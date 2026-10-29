@@ -49,7 +49,20 @@ export interface TreeResponse {
 
 export type IndentOption = "2" | "4" | "compact";
 
-export type CodeLang = "typescript" | "go" | "python" | "zod" | "rust" | "java" | "yaml" | "csv" | "xml";
+export type CodeLang = "typescript" | "go" | "python" | "zod" | "rust" | "java" | "jsonschema" | "yaml" | "csv" | "xml";
+
+export interface SchemaIssue {
+  /** JavaScript-style accessor of the failing value, e.g. $.users[0].age */
+  path: string;
+  /** JSON pointer id compatible with the tree view. */
+  pointer: string;
+  keyword: string;
+  message: string;
+}
+
+export type SchemaResult =
+  | { ok: true; valid: boolean; issues: SchemaIssue[]; total: number; draft: string }
+  | { ok: false; error: string };
 
 export interface DiffLine {
   kind: "add" | "del" | "same";
