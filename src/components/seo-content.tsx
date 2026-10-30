@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdSlot } from "./ad-slot";
+import { ERROR_PAGES } from "@/lib/error-pages";
 import { GUIDES } from "@/lib/guides";
 import { PAGES, SITE_NAME, pageUrl, type ToolPage } from "@/lib/site";
 
@@ -73,6 +74,15 @@ export function SeoContent({ page }: { page: ToolPage }) {
             <p>{f.a}</p>
           </details>
         ))}
+
+        <h2>Fix common JSON errors</h2>
+        <ul>
+          {ERROR_PAGES.map((e) => (
+            <li key={e.slug}>
+              <Link href={`/json-errors/${e.slug}/`}>{e.h1}</Link>
+            </li>
+          ))}
+        </ul>
 
         <h2>More JSON tools</h2>
         <ul>

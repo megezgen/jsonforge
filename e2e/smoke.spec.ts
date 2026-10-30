@@ -284,3 +284,42 @@ test("tree viewer FAQ no longer says the tree is read-only", async ({ page }) =>
   await expect(page.getByText("The tree is read-only")).toHaveCount(0);
   await expect(page.getByText("Double-click a value to change it")).toBeAttached();
 });
+
+test.describe("json error pages", () => {
+  const slugs = [
+    "unexpected-token-less-than",
+    "unexpected-end-of-json-input",
+    "expected-property-name-or-close-brace",
+    "trailing-comma",
+    "expected-comma-or-closing-brace",
+    "undefined-is-not-valid-json",
+    "bad-control-character-in-string",
+    "unexpected-non-whitespace-after-json",
+    "unexpected-token-nan-bom",
+  ];
+
+  for (const slug of slugs) {
+    test(`${slug} reproduces its error and documents it`, async ({ page }) => {
+      await page.goto(`/json-errors/${slug}/`);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Common causes" })).toBeVisible();
+      // The sample loaded into the tool really is invalid JSON.
+      await expect(page.getByRole("status")).toContainText("Ln", { timeout: 15000 });
+      await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+    });
+  }
+
+  test("trailing comma sample is repaired by Fix JSON", async ({ page }) => {
+    await page.goto("/json-errors/trailing-comma/");
+    await expect(page.getByRole("status")).toContainText("Ln", { timeout: 15000 });
+    await page.getByRole("button", { name: "Fix JSON" }).first().click();
+    await expect(page.getByRole("status")).toContainText("Valid JSON");
+  });
+
+  test("index lists every error and tool pages link to them", async ({ page }) => {
+    await page.goto("/json-errors/");
+    await expect(page.getByRole("link", { name: /Unexpected token '<'/ })).toBeVisible();
+    await page.goto("/json-validator/");
+    await expect(page.getByRole("link", { name: "Trailing comma in JSON" })).toBeAttached();
+  });
+});

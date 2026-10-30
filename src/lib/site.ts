@@ -772,6 +772,7 @@ export const PAGES: ToolPage[] = [
 /** Pages that exist besides the tools; they appear in the sitemap and footer. */
 export const INFO_PAGES = [
   { slug: "about", label: "About" },
+  { slug: "json-errors", label: "JSON Errors" },
   { slug: "benchmarks", label: "Benchmarks" },
   { slug: "privacy", label: "Privacy Policy" },
   { slug: "terms", label: "Terms of Use" },
