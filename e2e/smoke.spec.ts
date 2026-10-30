@@ -192,3 +192,11 @@ test.describe("offline", () => {
     await context.setOffline(false);
   });
 });
+
+test("benchmarks page shows the measured table and honest limits", async ({ page }) => {
+  await page.goto("/benchmarks/");
+  await expect(page).toHaveTitle(/Benchmarks/);
+  await expect(page.getByRole("row")).toHaveCount(5);
+  await expect(page.getByText("What still pauses the page")).toBeVisible();
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+});

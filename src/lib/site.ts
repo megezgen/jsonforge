@@ -50,7 +50,7 @@ export const PAGES: ToolPage[] = [
     slug: "",
     title: "JSON Viewer Online: Tree View, Formatter & Validator",
     description:
-      "Free online JSON viewer with a fast, searchable tree view. Open 20MB+ files without freezing, format, validate and convert JSON. 100% client-side: your data never leaves your browser.",
+      "Free online JSON viewer with a fast, searchable tree view. Open 20MB+ files in seconds, format, validate and convert JSON. 100% client-side: your data never leaves your browser.",
     h1: "JSON Viewer Online",
     intro:
       "View, search and edit JSON in a fast tree view, with instant validation and one-click formatting. Everything runs in your browser, so your data never leaves your device.",
@@ -455,11 +455,11 @@ export const PAGES: ToolPage[] = [
     sections: [
       {
         h: "Why big JSON files freeze most viewers",
-        p: "Most tools parse on the main browser thread and build a DOM element for every node. A file with a million nodes means a million elements, which locks the page. This viewer parses in a Web Worker and renders only the few dozen rows that fit on screen, so scrolling stays smooth whatever the file size.",
+        p: "Most tools parse on the main browser thread and build a DOM element for every node. A file with a million nodes means a million elements, which locks the page. This viewer parses in a Web Worker and renders only the few dozen rows that fit on screen, so scrolling, searching and expanding stay smooth whatever the file size. Loading the text into the editor still runs on the main thread, so very large files can pause the page briefly while they load (see the benchmarks page for measured numbers).",
       },
       {
         h: "What to expect with huge files",
-        p: "Parsing a 20 MB document typically takes about a second on a modern laptop. For very large inputs the editor switches to a lighter mode without minimap or language services. The tree view lists at most 250,000 rows at once; if you expand everything on a bigger file, collapse some branches or use search to narrow it down.",
+        p: "On a desktop computer with Chrome a 25 MB file is parsed and shown as valid in roughly two to three seconds, and the page can pause for a second or two while the editor loads the text (measured numbers are on the benchmarks page). For very large inputs the editor switches to a lighter mode without minimap or language services. The tree view lists at most 250,000 rows at once; if you expand everything on a bigger file, collapse some branches or use search to narrow it down.",
       },
       {
         h: "Your data stays on your device",
@@ -772,6 +772,7 @@ export const PAGES: ToolPage[] = [
 /** Pages that exist besides the tools; they appear in the sitemap and footer. */
 export const INFO_PAGES = [
   { slug: "about", label: "About" },
+  { slug: "benchmarks", label: "Benchmarks" },
   { slug: "privacy", label: "Privacy Policy" },
   { slug: "terms", label: "Terms of Use" },
 ] as const;
