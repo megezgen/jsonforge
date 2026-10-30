@@ -41,9 +41,9 @@ const monaco = walk(root)
   .sort();
 
 const urls = ["/", "/icons/icon-192.png", "/icons/icon-512.png", ...monaco];
-const version = createHash("sha1").update(urls.join("\n")).digest("hex").slice(0, 10);
-
 const bytes = monaco.reduce((n, u) => n + statSync(join("public", u)).size, 0);
 const template = readFileSync(join("scripts", "sw.template.js"), "utf8");
+// The version changes whenever the file list or the worker logic changes, so old caches get replaced.
+const version = createHash("sha1").update(urls.join("\n")).update(template).digest("hex").slice(0, 10);
 writeFileSync(join("public", "sw.js"), template.replace("__VERSION__", version).replace("__PRECACHE__", JSON.stringify(urls, null, 2)));
 console.log(`gen-sw: ${urls.length} URLs precached (Monaco ${(bytes / 1024 / 1024).toFixed(1)} MB), version ${version}`);

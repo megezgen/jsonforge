@@ -19,7 +19,7 @@ On Windows PowerShell use `npm.cmd` if script execution is disabled.
 ## Build and preview
 
 ```bash
-npm run build      # static site in ./out
+npm run build      # static site in ./out. Also generates the offline service worker: use this, not `npx next build`
 npm start          # serves ./out on http://localhost:3000
 ```
 
