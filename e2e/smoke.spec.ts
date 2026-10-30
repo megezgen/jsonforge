@@ -359,3 +359,31 @@ test.describe("examples and cheat sheets", () => {
     await expect(page.getByRole("link", { name: "JSONPath Cheat Sheet" })).toBeVisible();
   });
 });
+
+test.describe("error hints", () => {
+  test("HTML is recognised, Fix JSON is not offered and the toolbar explains why", async ({ page }) => {
+    await page.goto("/json-errors/unexpected-token-less-than/");
+    await expect(page.getByText("This looks like HTML, not JSON").first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("button", { name: "Try Fix JSON" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Fix JSON", exact: true }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "cannot be repaired" })).toBeVisible();
+  });
+
+  test("a fixable error is explained and links to its guide", async ({ page }) => {
+    await page.goto("/json-validator/");
+    await expect(page.getByText("A key is not written in double quotes")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("link", { name: "Read the full explanation" })).toHaveAttribute("href", /json-errors\/expected-property-name-or-close-brace/);
+    await expect(page.getByRole("button", { name: "Try Fix JSON" })).toBeVisible();
+  });
+
+  test("on a guide page the panel does not link to the page you are already on", async ({ page }) => {
+    await page.goto("/json-errors/trailing-comma/");
+    await expect(page.getByText("There is a comma after the last item").first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole("link", { name: "Read the full explanation" })).toHaveCount(0);
+  });
+
+  test("truncated JSON is recognised as cut off", async ({ page }) => {
+    await page.goto("/json-errors/unexpected-end-of-json-input/");
+    await expect(page.getByText("The JSON ends too early").first()).toBeVisible({ timeout: 15000 });
+  });
+});

@@ -3,6 +3,7 @@ import { JsonTool } from "./json-tool";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { ERROR_PAGES, LOCATE_STEPS, errorPageBySlug, type ErrorPage } from "@/lib/error-pages";
+import { hintForSlug } from "@/lib/error-hints";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const url = (slug: string) => `${SITE_URL}/json-errors/${slug}/`;
@@ -32,6 +33,7 @@ export function ErrorPageJsonLd({ page }: { page: ErrorPage }) {
 }
 
 export function ErrorPageView({ page }: { page: ErrorPage }) {
+  const repairable = hintForSlug(page.slug)?.repairable !== false;
   const related = page.related.map(errorPageBySlug).filter((p): p is ErrorPage => !!p);
   return (
     <>
@@ -43,7 +45,11 @@ export function ErrorPageView({ page }: { page: ErrorPage }) {
           </Link>
         </p>
         <h1 className="text-base font-semibold sm:text-lg">{page.h1}</h1>
-        <p className="mx-auto max-w-3xl text-xs text-muted">The JSON below reproduces this error. See where it breaks, press Fix JSON, or paste your own text.</p>
+        <p className="mx-auto max-w-3xl text-xs text-muted">
+          {repairable
+            ? "The JSON below reproduces this error. See where it breaks, press Fix JSON, or paste your own text."
+            : "The text below reproduces this error. It is not damaged JSON, so Fix JSON cannot repair it: the cause is where the text comes from. Read the causes below, or paste your own text."}
+        </p>
       </div>
       <main>
         <JsonTool initialTab="tree" sample={{ json: page.sample }} />

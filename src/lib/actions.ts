@@ -1,4 +1,5 @@
 import { editorBridge } from "./editor-bridge";
+import { explainError } from "./error-hints";
 import { buildSample, type SampleSize } from "./samples";
 import { MAX_SHARE_CHARS, decodeShare, encodeShare, hasShare, shareSupported } from "./share";
 import { engine } from "./worker-client";
@@ -73,6 +74,11 @@ export function clearInput() {
 export async function fixInput() {
   const text = editorBridge.getValue();
   if (!text.trim()) return app().notify("info", "Nothing to fix");
+  const { status, error } = app();
+  const hint = status === "invalid" && error ? explainError(text, error.message) : null;
+  if (hint && !hint.repairable) {
+    return app().notify("error", `${hint.short}. Fix JSON only repairs damaged JSON. See the explanation in the panel on the right.`);
+  }
   try {
     const fixed = await engine.repair(text);
     editorBridge.setValue(fixed);
@@ -82,7 +88,7 @@ export async function fixInput() {
       app().notify("success", "JSON repaired");
     }
   } catch {
-    app().notify("error", "Could not repair this input automatically");
+    app().notify("error", "Could not repair this input automatically. See the error details in the panel on the right.");
   }
 }
 
