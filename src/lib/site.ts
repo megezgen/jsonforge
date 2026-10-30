@@ -32,6 +32,10 @@ export const COMMON_FAQ: Faq[] = [
     a: "No. Parsing, validation, formatting, diffing and code generation all run inside your browser, using a Web Worker. Your data is never sent to any server, which makes the tool safe for API responses, configuration files and other sensitive payloads.",
   },
   {
+    q: "Does it work offline?",
+    a: "Yes, after the first visit. The editor and tools are stored in your browser, so you can use them without a connection. Only the TypeScript, CSS and HTML language workers used for extra highlighting in the Code tab are downloaded the first time you use them.",
+  },
+  {
     q: "How large a JSON file can I open?",
     a: "Files of 20 MB and more work. Parsing happens off the main thread and the tree view is virtualized, so only the rows you can see are rendered. The editor switches to a lighter mode for very large documents.",
   },
@@ -80,6 +84,10 @@ export const PAGES: ToolPage[] = [
       {
         h: "Tips for very large JSON files",
         p: "Collapse everything first and expand only the branch you care about. Search narrows the tree to matching paths, which is faster than scrolling through hundreds of thousands of rows. For files above a few megabytes the editor automatically switches to a lighter mode, but parsing and the tree stay responsive because they run off the main thread.",
+      },
+      {
+        h: "Works offline",
+        p: "After your first visit the app keeps its code and editor in your browser, so you can open it with no connection: paste JSON, format, validate, convert and diff as usual. Pages you have not opened yet fall back to the main tool. You can also install it from your browser's menu (Install app) to get a window of its own. Because everything already runs locally, going offline changes nothing about your data.",
       },
       {
         h: "Share JSON without uploading it",

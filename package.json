@@ -9,6 +9,7 @@
     "start": "serve out -l 3000",
     "typecheck": "tsc --noEmit",
     "postinstall": "node scripts/copy-monaco.mjs",
+    "prebuild": "node scripts/copy-monaco.mjs && node scripts/gen-sw.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

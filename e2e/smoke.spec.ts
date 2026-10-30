@@ -162,3 +162,33 @@ test.describe("share link", () => {
     await expect(page.getByRole("button", { name: "Format" }).first()).toBeVisible();
   });
 });
+
+test.describe("offline", () => {
+  test("works without a connection after the first visit", async ({ page, context }) => {
+    await page.goto("/");
+    await expect(status(page)).toContainText("Valid JSON");
+    // Wait until the service worker controls the page and has filled its precache.
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(async () => {
+            await navigator.serviceWorker.ready;
+            if (!navigator.serviceWorker.controller) return -1;
+            const names = (await caches.keys()).filter((n) => n.startsWith("jf-precache"));
+            const pre = names.length ? (await (await caches.open(names[0]!)).keys()).length : 0;
+            const run = (await caches.keys()).filter((n) => n.startsWith("jf-runtime"));
+            const runCount = run.length ? (await (await caches.open(run[0]!)).keys()).length : 0;
+            return pre > 20 && runCount > 5 ? pre : 0;
+          }),
+        { timeout: 30000 },
+      )
+      .toBeGreaterThan(20);
+
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Format" }).first()).toBeVisible();
+    await expect(status(page)).toContainText("Valid JSON", { timeout: 15000 });
+    await expect(page.locator(".monaco-editor").first()).toBeVisible();
+    await context.setOffline(false);
+  });
+});
