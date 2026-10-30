@@ -47,6 +47,13 @@ export function InputEditor() {
               ed.setScrollTop(0);
               ed.setPosition({ lineNumber: 1, column: 1 });
             },
+            replaceAll: (text) => {
+              const model = ed.getModel();
+              if (!model) return;
+              ed.pushUndoStop();
+              ed.executeEdits("tree-edit", [{ range: model.getFullModelRange(), text }]);
+              ed.pushUndoStop();
+            },
             reveal: (line, column) => {
               ed.revealLineInCenter(line);
               ed.setPosition({ lineNumber: line, column });

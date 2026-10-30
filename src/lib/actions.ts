@@ -2,6 +2,7 @@ import { editorBridge } from "./editor-bridge";
 import { buildSample, type SampleSize } from "./samples";
 import { MAX_SHARE_CHARS, decodeShare, encodeShare, hasShare, shareSupported } from "./share";
 import { engine } from "./worker-client";
+import type { EditRequest, EditResult } from "./types";
 import { useApp } from "@/store/app-store";
 
 const LARGE_THRESHOLD = 1_500_000;
@@ -156,6 +157,18 @@ export async function loadFromShareLink(): Promise<boolean> {
     app().notify("error", "This share link is damaged or too large");
     return false;
   }
+}
+
+/** Applies an edit made in the tree to the document. The editor text is replaced as one undoable edit. */
+export async function editTree(req: Omit<EditRequest, "indent">): Promise<EditResult> {
+  const res = await engine.edit({ ...req, indent: app().indent });
+  if (res.ok) {
+    editorBridge.replaceAll(res.text);
+    await parseNow();
+  } else {
+    app().notify("error", res.error);
+  }
+  return res;
 }
 
 export async function loadFile(file: File) {

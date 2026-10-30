@@ -1,5 +1,5 @@
 import * as engine from "@/lib/engine";
-import type { CodeLang, IndentOption, TreeRequest } from "@/lib/types";
+import type { CodeLang, EditRequest, IndentOption, TreeRequest } from "@/lib/types";
 
 export type WorkerRequest =
   | { id: number; op: "parse"; text: string }
@@ -10,7 +10,8 @@ export type WorkerRequest =
   | { id: number; op: "codegen"; lang: CodeLang; rootName: string }
   | { id: number; op: "diff"; left: string; right: string; sortKeys: boolean }
   | { id: number; op: "schema"; schemaText: string }
-  | { id: number; op: "query"; expression: string; withValues: boolean };
+  | { id: number; op: "query"; expression: string; withValues: boolean }
+  | { id: number; op: "edit"; req: EditRequest };
 
 export type WorkerResponse = { id: number; ok: true; result: unknown } | { id: number; ok: false; error: string };
 
@@ -51,6 +52,9 @@ scope.onmessage = (e) => {
         break;
       case "query":
         result = engine.queryPath(msg.expression, msg.withValues);
+        break;
+      case "edit":
+        result = engine.editNode(msg.req);
         break;
     }
     scope.postMessage({ id: msg.id, ok: true, result });

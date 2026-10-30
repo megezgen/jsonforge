@@ -12,6 +12,8 @@ import type {
   NodeCopy,
   NodeType,
   ParseErrorInfo,
+  EditRequest,
+  EditResult,
   ParseResult,
   QueryItem,
   QueryResult,
@@ -275,6 +277,89 @@ export function nodeCopy(id: string): NodeCopy {
   if (!hasCurrent) throw new Error("No valid JSON loaded");
   const { value, path } = resolve(id);
   return { json: typeof value === "string" ? value : JSON.stringify(value, null, 2), path };
+}
+
+// ---------- tree editing ----------
+
+function pointerTokens(id: string): string[] {
+  return id === "" ? [] : id.slice(1).split("/").map(unesc);
+}
+
+function getAt(tokens: string[]): unknown {
+  let v: unknown = current;
+  for (const t of tokens) v = Array.isArray(v) ? v[Number(t)] : (v as Record<string, unknown>)[t];
+  return v;
+}
+
+/**
+ * Applies one edit to the parsed value and returns the new document text. The caller puts the text
+ * into the editor, which stays the single source of truth (and keeps its own undo history).
+ */
+export function editNode(req: EditRequest): EditResult {
+  if (!hasCurrent) return { ok: false, error: "No valid JSON loaded" };
+  const tokens = pointerTokens(req.pointer);
+  const last = tokens[tokens.length - 1];
+  const parentPointer = tokens.length ? "/" + tokens.slice(0, -1).map(esc).join("/") : "";
+  const parent = tokens.length ? getAt(tokens.slice(0, -1)) : undefined;
+  let newPointer: string | undefined;
+
+  try {
+    switch (req.action) {
+      case "set": {
+        let value: unknown;
+        try {
+          value = JSON.parse(req.value ?? "");
+        } catch {
+          return { ok: false, error: "That is not valid JSON. Strings need double quotes." };
+        }
+        if (!tokens.length) current = value;
+        else if (Array.isArray(parent)) parent[Number(last)] = value;
+        else (parent as Record<string, unknown>)[last!] = value;
+        break;
+      }
+      case "delete": {
+        if (!tokens.length) return { ok: false, error: "The root value cannot be deleted" };
+        if (Array.isArray(parent)) parent.splice(Number(last), 1);
+        else delete (parent as Record<string, unknown>)[last!];
+        break;
+      }
+      case "add": {
+        const target = getAt(tokens);
+        if (Array.isArray(target)) {
+          target.push(null);
+          newPointer = `${req.pointer}/${target.length - 1}`;
+        } else if (target !== null && typeof target === "object") {
+          const obj = target as Record<string, unknown>;
+          let name = "newKey";
+          for (let n = 2; name in obj; n++) name = `newKey${n}`;
+          obj[name] = null;
+          newPointer = `${req.pointer}/${esc(name)}`;
+        } else {
+          return { ok: false, error: "Only objects and arrays can have items added" };
+        }
+        break;
+      }
+      case "rename": {
+        if (!tokens.length || parent === null || typeof parent !== "object" || Array.isArray(parent)) {
+          return { ok: false, error: "Only object keys can be renamed" };
+        }
+        const name = req.name ?? "";
+        if (name === "") return { ok: false, error: "A key cannot be empty" };
+        const obj = parent as Record<string, unknown>;
+        if (name !== last && name in obj) return { ok: false, error: "That key already exists in this object" };
+        const entries = Object.entries(obj);
+        for (const k of Object.keys(obj)) delete obj[k];
+        for (const [k, v] of entries) obj[k === last ? name : k] = v;
+        newPointer = `${parentPointer}/${esc(name)}`;
+        break;
+      }
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+
+  searchCache = null;
+  return { ok: true, text: stringify(current, req.indent === "compact" ? "2" : req.indent, false), newPointer };
 }
 
 // ---------- code generation ----------

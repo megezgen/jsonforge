@@ -70,6 +70,10 @@ export const PAGES: ToolPage[] = [
         p: "Paste JSON, drop a file onto the editor or press Open, and the tree view shows the structure instantly. Click any object or array to expand or collapse it, use Expand and Collapse to open everything or fold it back to the first level, and search keys and values at the same time. Hover a row to copy its value or its path, for example $.users[0].address.city, ready to paste into code.",
       },
       {
+        h: "Edit JSON right in the tree",
+        p: "You do not have to switch to the text editor to make a change. Double-click a value to edit it, or use the pencil icon on its row. Type a number, true, false, null or a quoted string: values are read as JSON, so 42 becomes a number while \"42\" stays a string, and text that is not valid JSON is kept as a string when the value already was one. Double-click a key to rename it, press the plus icon on an object or array to add a property or item, and the trash icon to delete. Every edit is written back into the editor as a single undoable change, so Ctrl+Z restores the previous text. Editing is turned off for large documents, because each change rewrites the whole text.",
+      },
+      {
         h: "Tree view or formatted text?",
         p: "The Tree tab is best for exploring: it shows types by colour, counts the children of every node and lets you jump to what you need. The Formatted tab shows the same data as indented text with 2 spaces, 4 spaces or compact output, and optional alphabetical key sorting. Use Format to write the pretty version back into the editor, or Minify to compress it.",
       },
@@ -499,7 +503,7 @@ export const PAGES: ToolPage[] = [
       },
     ],
     faq: [
-      { q: "Can I edit values in the tree?", a: "The tree is read-only. Edit the JSON in the editor on the left and the tree updates immediately." },
+      { q: "Can I edit values in the tree?", a: "Yes. Double-click a value to change it, double-click a key to rename it, use the plus icon to add an item or property and the trash icon to delete. Every change updates the JSON in the editor, and Ctrl+Z in the editor undoes it. Editing in the tree is turned off for very large documents; edit those in the editor." },
       ...COMMON_FAQ,
     ],
     keywords: ["json tree viewer", "json tree view online", "json viewer tree", "expandable json viewer"],

@@ -80,6 +80,21 @@ export interface NodeCopy {
   path: string;
 }
 
+export type EditAction = "set" | "delete" | "add" | "rename";
+
+export interface EditRequest {
+  action: EditAction;
+  /** JSON-pointer id of the node (same ids as the tree rows). */
+  pointer: string;
+  /** For "set": the new value as JSON text. */
+  value?: string;
+  /** For "rename": the new key name. */
+  name?: string;
+  indent: IndentOption;
+}
+
+export type EditResult = { ok: true; text: string; newPointer?: string } | { ok: false; error: string };
+
 export interface QueryItem {
   /** JavaScript-style accessor of the match, e.g. $.users[0].name */
   path: string;

@@ -8,6 +8,8 @@
 interface EditorHandle {
   getValue(): string;
   setValue(text: string): void;
+  /** Replaces the whole document as one undoable edit (Ctrl+Z restores the previous text). */
+  replaceAll(text: string): void;
   reveal(line: number, column: number): void;
 }
 
@@ -30,6 +32,10 @@ export const editorBridge = {
   },
   setValue(text: string) {
     if (handle) handle.setValue(text);
+    else pendingText = text;
+  },
+  replaceAll(text: string) {
+    if (handle) handle.replaceAll(text);
     else pendingText = text;
   },
   reveal(line: number, column: number) {

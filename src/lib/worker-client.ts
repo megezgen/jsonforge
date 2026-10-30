@@ -2,6 +2,8 @@ import type { WorkerRequest, WorkerResponse } from "@/workers/json.worker";
 import type {
   CodeLang,
   DiffResponse,
+  EditRequest,
+  EditResult,
   IndentOption,
   NodeCopy,
   ParseResult,
@@ -53,5 +55,6 @@ export const engine = {
   codegen: (lang: CodeLang, rootName: string) => call<string>({ op: "codegen", lang, rootName }),
   diff: (left: string, right: string, sortKeys: boolean) => call<DiffResponse>({ op: "diff", left, right, sortKeys }),
   schema: (schemaText: string) => call<SchemaResult>({ op: "schema", schemaText }),
+  edit: (req: EditRequest) => call<EditResult>({ op: "edit", req }),
   query: (expression: string, withValues = false) => call<QueryResult>({ op: "query", expression, withValues }),
 };

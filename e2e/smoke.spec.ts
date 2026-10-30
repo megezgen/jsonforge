@@ -215,3 +215,72 @@ test.describe("guides", () => {
     });
   }
 });
+
+test.describe("tree editing", () => {
+  const row = (page: Page, key: string) => page.getByRole("treeitem").filter({ hasText: `"${key}"` }).first();
+  const editor = (page: Page) => page.locator(".monaco-editor").first();
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await expect(status(page)).toContainText("Valid JSON");
+    await expect(row(page, "id")).toBeVisible();
+  });
+
+  test("edits a number and keeps the editor in sync", async ({ page }) => {
+    await row(page, "id").hover();
+    await row(page, "id").getByRole("button", { name: "Edit value" }).click();
+    await page.getByLabel("New value").fill("99");
+    await page.keyboard.press("Enter");
+    await expect(editor(page)).toContainText('"id": 99');
+    await expect(row(page, "id")).toContainText("99");
+  });
+
+  test("a string stays a string when typed without quotes", async ({ page }) => {
+    await row(page, "name").hover();
+    await row(page, "name").getByRole("button", { name: "Edit value" }).click();
+    await page.getByLabel("New value").fill("Renamed");
+    await page.keyboard.press("Enter");
+    await expect(editor(page)).toContainText('"name": "Renamed"');
+  });
+
+  test("invalid JSON for a non-string value is rejected with a message", async ({ page }) => {
+    await row(page, "private").hover();
+    await row(page, "private").getByRole("button", { name: "Edit value" }).click();
+    await page.getByLabel("New value").fill("maybe");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("alert").filter({ hasText: "That is not valid JSON" })).toBeVisible();
+    await expect(editor(page)).toContainText('"private": true');
+  });
+
+  test("deletes a key and Ctrl+Z in the editor brings it back", async ({ page }) => {
+    await row(page, "private").hover();
+    await row(page, "private").getByRole("button", { name: "Delete" }).click();
+    await expect(editor(page)).not.toContainText('"private"');
+    await editor(page).click();
+    await page.keyboard.press("Control+Z");
+    await expect(editor(page)).toContainText('"private": true');
+  });
+
+  test("renames a key by double-clicking it", async ({ page }) => {
+    await row(page, "id").getByText('"id"').dblclick();
+    await page.getByLabel("Rename key").fill("ident");
+    await page.keyboard.press("Enter");
+    await expect(editor(page)).toContainText('"ident": 1');
+  });
+
+  test("adds a property to the root object", async ({ page }) => {
+    const root = page.getByRole("treeitem").first();
+    await root.hover();
+    await root.getByRole("button", { name: "Add property" }).click();
+    await expect(page.getByLabel("Rename key")).toHaveValue("newKey");
+    await page.getByLabel("Rename key").fill("extra");
+    await page.keyboard.press("Enter");
+    await expect(editor(page)).toContainText('"extra": null');
+  });
+});
+
+test("tree viewer FAQ no longer says the tree is read-only", async ({ page }) => {
+  await page.goto("/json-tree-viewer/");
+  await expect(page.getByText("The tree is read-only")).toHaveCount(0);
+  await expect(page.getByText("Double-click a value to change it")).toBeAttached();
+});
