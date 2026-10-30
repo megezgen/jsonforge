@@ -720,10 +720,6 @@ export const PAGES: ToolPage[] = [
     },
     sections: [
       {
-        h: "JSONPath syntax cheat sheet",
-        p: "$ is the root. .name or ['name'] selects a key, [0] an array index and [*] or .* every child. .. searches all levels, so $..price finds every price anywhere. [0:3] slices an array, [0,2] picks several indexes, and [?(@.price < 10)] filters items by a condition, where @ is the current item.",
-      },
-      {
         h: "Filters and comparisons",
         p: "Filter expressions compare values of the current item, for example $.books[?(@.price > 10 && @.inStock == true)].title. Strings must be quoted, and a filter on a missing key simply does not match. Filters are evaluated by a built-in parser, not by running JavaScript.",
       },
