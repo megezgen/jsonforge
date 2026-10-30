@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AdSlot } from "./ad-slot";
+import { CHEAT_SHEETS } from "@/lib/cheat-sheets";
 import { ERROR_PAGES } from "@/lib/error-pages";
+import { EXAMPLES } from "@/lib/examples";
 import { GUIDES } from "@/lib/guides";
 import { PAGES, SITE_NAME, pageUrl, type ToolPage } from "@/lib/site";
 
@@ -80,6 +82,24 @@ export function SeoContent({ page }: { page: ToolPage }) {
           {ERROR_PAGES.map((e) => (
             <li key={e.slug}>
               <Link href={`/json-errors/${e.slug}/`}>{e.h1}</Link>
+            </li>
+          ))}
+        </ul>
+
+        <h2>JSON examples to try</h2>
+        <ul>
+          {EXAMPLES.map((e) => (
+            <li key={e.slug}>
+              <Link href={`/json-examples/${e.slug}/`}>{e.h1}</Link>
+            </li>
+          ))}
+        </ul>
+
+        <h2>Cheat sheets</h2>
+        <ul>
+          {CHEAT_SHEETS.map((c) => (
+            <li key={c.slug}>
+              <Link href={`/cheat-sheets/${c.slug}/`}>{c.h1}</Link>
             </li>
           ))}
         </ul>

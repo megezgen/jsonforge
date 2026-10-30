@@ -323,3 +323,39 @@ test.describe("json error pages", () => {
     await expect(page.getByRole("link", { name: "Trailing comma in JSON" })).toBeAttached();
   });
 });
+
+test.describe("examples and cheat sheets", () => {
+  const examples = [
+    "simple-json-example", "json-array-example", "nested-json-example", "user-profile-json", "paginated-api-response-json", "product-catalog-json",
+    "order-invoice-json", "blog-posts-json", "package-json-example", "geojson-example", "app-config-json", "weather-api-json",
+  ];
+  for (const slug of examples) {
+    test(`example ${slug} loads valid JSON and documents its fields`, async ({ page }) => {
+      await page.goto(`/json-examples/${slug}/`);
+      await expect(page.getByRole("status")).toContainText("Valid JSON", { timeout: 15000 });
+      await expect(page.getByRole("heading", { name: "Fields explained" })).toBeVisible();
+      await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+    });
+  }
+
+  for (const slug of ["json-syntax", "jsonpath", "json-schema"]) {
+    test(`cheat sheet ${slug} renders tables`, async ({ page }) => {
+      await page.goto(`/cheat-sheets/${slug}/`);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      expect(await page.locator("table").count()).toBeGreaterThanOrEqual(2);
+    });
+  }
+
+  test("order example totals are consistent", async ({ page }) => {
+    await page.goto("/json-examples/order-invoice-json/");
+    await expect(page.getByRole("status")).toContainText("Valid JSON", { timeout: 15000 });
+    await expect(page.locator(".monaco-editor").first()).toContainText('"orderId"');
+  });
+
+  test("index pages list everything", async ({ page }) => {
+    await page.goto("/json-examples/");
+    await expect(page.getByRole("link", { name: "GeoJSON Example" })).toBeVisible();
+    await page.goto("/cheat-sheets/");
+    await expect(page.getByRole("link", { name: "JSONPath Cheat Sheet" })).toBeVisible();
+  });
+});

@@ -773,6 +773,8 @@ export const PAGES: ToolPage[] = [
 export const INFO_PAGES = [
   { slug: "about", label: "About" },
   { slug: "json-errors", label: "JSON Errors" },
+  { slug: "json-examples", label: "JSON Examples" },
+  { slug: "cheat-sheets", label: "Cheat Sheets" },
   { slug: "benchmarks", label: "Benchmarks" },
   { slug: "privacy", label: "Privacy Policy" },
   { slug: "terms", label: "Terms of Use" },

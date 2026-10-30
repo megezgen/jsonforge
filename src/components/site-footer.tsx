@@ -3,7 +3,7 @@ import { INFO_PAGES, PAGES, REPO_URL, SITE_NAME, SUPPORT_URL } from "@/lib/site"
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-panel px-4 py-8 text-xs text-muted">
+    <footer className="border-t border-line bg-panel px-4 py-8 text-xs text-muted print:hidden">
       <div className="mx-auto grid max-w-[1200px] gap-6 sm:grid-cols-[1fr_auto]">
         <nav aria-label="All tools" className="flex flex-wrap gap-x-4 gap-y-0.5">
           {PAGES.map((p) => (

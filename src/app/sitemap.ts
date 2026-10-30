@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
+import { CHEAT_SHEETS } from "@/lib/cheat-sheets";
 import { ERROR_PAGES } from "@/lib/error-pages";
+import { EXAMPLES } from "@/lib/examples";
 import { INFO_PAGES, PAGES, SITE_URL, pageUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -12,5 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
   const info = INFO_PAGES.map((p) => ({ url: `${SITE_URL}/${p.slug}/`, changeFrequency: "yearly" as const, priority: 0.3 }));
   const errors = ERROR_PAGES.map((p) => ({ url: `${SITE_URL}/json-errors/${p.slug}/`, changeFrequency: "monthly" as const, priority: 0.7 }));
-  return [...tools, ...errors, ...info];
+  const examples = EXAMPLES.map((p) => ({ url: `${SITE_URL}/json-examples/${p.slug}/`, changeFrequency: "monthly" as const, priority: 0.6 }));
+  const sheets = CHEAT_SHEETS.map((p) => ({ url: `${SITE_URL}/cheat-sheets/${p.slug}/`, changeFrequency: "monthly" as const, priority: 0.6 }));
+  return [...tools, ...errors, ...examples, ...sheets, ...info];
 }
