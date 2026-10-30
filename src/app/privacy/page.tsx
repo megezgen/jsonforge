@@ -18,6 +18,12 @@ export default function Privacy() {
       </p>
       <h2>Data stored in your browser</h2>
       <p>The site stores a single preference, your light or dark theme choice, in your browser&apos;s local storage. It never leaves your device.</p>
+      <h2>Share links</h2>
+      <p>
+        The Share button stores your JSON, compressed, inside the link itself (after the # sign). Browsers do not send that part of a URL to servers, so we never
+        receive it. Anyone who has the link can read the data, and the link may be kept in your browser history or in the apps where you paste it, so treat it
+        like the data itself.
+      </p>
       <h2>Server logs</h2>
       <p>
         The site is delivered by a static hosting provider. Like any web host, it may keep standard technical request logs (for example IP address, requested

@@ -45,7 +45,7 @@ test.describe("JSON Forge", () => {
     ["json-to-zod", "z.object({"],
     ["json-to-rust", "pub struct Root"],
     ["json-to-java", "public record Root("],
-    ["json-to-yaml", "name: JSON Forge"],
+    ["json-to-yaml", "apiVersion: apps/v1"],
   ] as const) {
     test(`${slug} generates output`, async ({ page }) => {
       await page.goto(`/${slug}/`);
@@ -65,7 +65,7 @@ test.describe("JSON Forge", () => {
   test("schema tab reports problems and accepts a generated schema", async ({ page }) => {
     await page.goto("/json-schema-validator/");
     await expect(status(page)).toContainText("Valid JSON");
-    await page.getByLabel("Validate the editor content against this JSON Schema:").fill('{"type":"object","required":["missing"],"properties":{"id":{"type":"string"}}}');
+    await page.getByLabel("Validate the editor content against this JSON Schema:").fill('{"type":"object","required":["missing"],"properties":{"id":{"type":"number"}}}');
     const result = page.getByRole("region", { name: "Schema validation result" });
     await expect(result).toContainText("problems found");
     await expect(result).toContainText("required");
@@ -83,11 +83,13 @@ test.describe("JSON Forge", () => {
     await page.goto("/jsonpath-tester/");
     await expect(status(page)).toContainText("Valid JSON");
     const results = page.getByRole("region", { name: "JSONPath results" });
-    await page.getByLabel("JSONPath expression").fill("$..name");
-    await expect(results).toContainText("2 matches");
-    await expect(results).toContainText("$.author.name");
-    await page.getByLabel("JSONPath expression").fill("$..[?(@.active == true)]");
-    await expect(results).toContainText("$.author");
+    await expect(page.getByLabel("JSONPath expression")).toHaveValue(/book/);
+    await expect(results).toContainText("3 matches");
+    await page.getByLabel("JSONPath expression").fill("$..author");
+    await expect(results).toContainText("4 matches");
+    await expect(results).toContainText("$.store.book[0].author");
+    await page.getByLabel("JSONPath expression").fill("$..[?(@.inStock == true)]");
+    await expect(results).toContainText("$.store.book[0]");
     await page.getByLabel("JSONPath expression").fill("$..[?(");
     await expect(results.locator(".text-danger")).toBeVisible();
   });
@@ -117,5 +119,46 @@ test.describe("JSON Forge", () => {
     const res = await page.goto("/does-not-exist/");
     expect(res?.status()).toBe(404);
     await expect(page.getByText("Page not found")).toBeVisible();
+  });
+});
+
+test.describe("page-specific demo data", () => {
+  test("validator page opens with broken JSON that Fix JSON repairs", async ({ page }) => {
+    await page.goto("/json-validator/");
+    await expect(page.getByRole("status")).toContainText("Ln", { timeout: 10000 });
+    await page.getByRole("button", { name: "Fix JSON" }).first().click();
+    await expect(page.getByRole("status")).toContainText("Valid JSON");
+  });
+
+  test("diff page opens with two versions already compared", async ({ page }) => {
+    await page.goto("/json-diff/");
+    await expect(page.getByText(/^\+\d+/)).toBeVisible({ timeout: 10000 });
+  });
+
+  test("csv page opens with a table-shaped sample", async ({ page }) => {
+    await page.goto("/json-to-csv/");
+    await expect(page.locator(".monaco-editor").nth(1)).toContainText("id,name,city", { timeout: 15000 });
+  });
+});
+
+test.describe("share link", () => {
+  test("round-trips the JSON through the URL fragment without a server", async ({ page, context }) => {
+    await page.goto("/json-sorter/");
+    await setEditor(page, '{"shared":true,"n":[1,2,3]}');
+    await expect(status(page)).toContainText("Valid JSON");
+    await page.getByRole("button", { name: /Share/ }).click();
+    await expect.poll(() => page.url()).toContain("#j=");
+
+    const other = await context.newPage();
+    await other.goto(page.url());
+    await expect(other.getByRole("status")).toContainText("Valid JSON");
+    await expect(other.getByRole("status")).toContainText("Nodes: 6");
+    await expect(other.locator(".monaco-editor").first()).toContainText('"shared"');
+  });
+
+  test("a damaged link shows an error instead of breaking the page", async ({ page }) => {
+    await page.goto("/#j=not-valid-data");
+    await expect(page.getByText("This share link is damaged")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Format" }).first()).toBeVisible();
   });
 });

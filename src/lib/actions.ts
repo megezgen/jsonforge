@@ -1,5 +1,6 @@
 import { editorBridge } from "./editor-bridge";
 import { buildSample, type SampleSize } from "./samples";
+import { MAX_SHARE_CHARS, decodeShare, encodeShare, hasShare, shareSupported } from "./share";
 import { engine } from "./worker-client";
 import { useApp } from "@/store/app-store";
 
@@ -128,6 +129,33 @@ export async function downloadJson() {
   a.download = "data.json";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Puts the editor content into the address bar as a share link and copies it. Nothing is uploaded. */
+export async function shareLink() {
+  const text = editorBridge.getValue();
+  if (!text.trim()) return app().notify("error", "Nothing to share: the editor is empty");
+  if (!shareSupported()) return app().notify("error", "Your browser does not support share links");
+  const fragment = await encodeShare(text);
+  if (!fragment) {
+    return app().notify("error", `Too large for a link (limit about ${Math.round(MAX_SHARE_CHARS / 1000)}k characters after compression). Use Download instead.`);
+  }
+  history.replaceState(null, "", `${location.pathname}${location.search}${fragment}`);
+  await copyText(location.href);
+  app().notify("success", "Link copied. The JSON is inside the link, nothing is uploaded.");
+}
+
+/** Loads JSON from a share link in the current address, if there is one. */
+export async function loadFromShareLink(): Promise<boolean> {
+  if (!hasShare(location.hash)) return false;
+  try {
+    editorBridge.setValue(await decodeShare(location.hash));
+    app().notify("info", "Loaded the JSON from the link");
+    return true;
+  } catch {
+    app().notify("error", "This share link is damaged or too large");
+    return false;
+  }
 }
 
 export async function loadFile(file: File) {

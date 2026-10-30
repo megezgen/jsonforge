@@ -82,6 +82,10 @@ export const PAGES: ToolPage[] = [
         p: "Collapse everything first and expand only the branch you care about. Search narrows the tree to matching paths, which is faster than scrolling through hundreds of thousands of rows. For files above a few megabytes the editor automatically switches to a lighter mode, but parsing and the tree stay responsive because they run off the main thread.",
       },
       {
+        h: "Share JSON without uploading it",
+        p: "Press Share to put your JSON into a link. The data is compressed and stored in the part of the address after the # sign, which browsers never send to any server, so there is no upload and no account. Anyone with the link sees the same JSON. Links are limited to roughly 8,000 characters after compression, so they suit snippets, configs and API samples rather than huge files. Treat a link like the data itself: do not paste it anywhere public if the JSON is sensitive.",
+      },
+      {
         h: "A viewer built for large files",
         p: "Most online formatters freeze on big payloads because they render every node. This tool parses in a background thread and virtualizes the tree, drawing only the rows on screen, so multi-megabyte API dumps and exports stay responsive. Search matches keys and values and opens the path to each hit.",
       },

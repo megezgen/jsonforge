@@ -3,6 +3,7 @@ import { JsonTool } from "./json-tool";
 import { JsonLd, SeoContent } from "./seo-content";
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
+import { PAGE_SAMPLES } from "@/lib/page-samples";
 import type { ToolPage } from "@/lib/site";
 
 export function ToolPageView({ page }: { page: ToolPage }) {
@@ -15,7 +16,7 @@ export function ToolPageView({ page }: { page: ToolPage }) {
       </div>
       <AdSlot size="leaderboard" className="mb-2" />
       <main>
-        <JsonTool initialTab={page.tab} initialCodeLang={page.lang} initialIndent={page.indent} initialSortKeys={page.sortKeys} />
+        <JsonTool initialTab={page.tab} initialCodeLang={page.lang} initialIndent={page.indent} initialSortKeys={page.sortKeys} sample={PAGE_SAMPLES[page.slug]} />
         <SeoContent page={page} />
       </main>
       <SiteFooter />

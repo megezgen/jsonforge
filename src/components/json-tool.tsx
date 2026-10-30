@@ -7,6 +7,7 @@ import {
   Code2,
   Copy,
   Download,
+  Link2,
   FileText,
   GitCompare,
   Keyboard,
@@ -30,6 +31,8 @@ import { Toaster } from "@/components/toaster";
 import { TreeView } from "@/components/tree-view";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { editorBridge } from "@/lib/editor-bridge";
+import type { PageSample } from "@/lib/page-samples";
 import {
   clearInput,
   copyOutput,
@@ -37,8 +40,10 @@ import {
   fixInput,
   formatInput,
   loadFile,
+  loadFromShareLink,
   loadSample,
   minifyInput,
+  shareLink,
   validateInput,
 } from "@/lib/actions";
 import type { CodeLang, IndentOption } from "@/lib/types";
@@ -147,6 +152,9 @@ function Toolbar() {
       <Button onClick={() => void downloadJson()} title="Download .json (Alt+Shift+D)">
         <Download /> Download
       </Button>
+      <Button onClick={() => void shareLink()} title="Copy a link that contains your JSON. Nothing is uploaded.">
+        <Link2 /> Share
+      </Button>
       <Button variant="ghost" onClick={clearInput} title="Clear (Alt+Shift+X)">
         <Trash2 /> Clear
       </Button>
@@ -223,17 +231,22 @@ export function JsonTool({
   initialCodeLang = "typescript",
   initialIndent = "2",
   initialSortKeys = false,
+  sample,
 }: {
   initialTab?: OutputTab;
   initialCodeLang?: CodeLang;
   initialIndent?: IndentOption;
   initialSortKeys?: boolean;
+  sample?: PageSample;
 }) {
   useShortcuts();
   const activeTab = useApp((s) => s.activeTab);
   const setActiveTab = useApp((s) => s.setActiveTab);
   const setIndent = useApp((s) => s.setIndent);
   const setSortKeys = useApp((s) => s.setSortKeys);
+  const setSchemaText = useApp((s) => s.setSchemaText);
+  const setQueryText = useApp((s) => s.setQueryText);
+  const setCompareText = useApp((s) => s.setCompareText);
   const { pct, container, onPointerDown } = useSplit();
 
   useEffect(() => {
@@ -241,6 +254,20 @@ export function JsonTool({
     setIndent(initialIndent);
     setSortKeys(initialSortKeys);
   }, [initialTab, initialIndent, initialSortKeys, setActiveTab, setIndent, setSortKeys]);
+
+  // Pages that ship their own demo data load it into the editor (and the schema, query and compare boxes).
+  useEffect(() => {
+    if (!sample) return;
+    editorBridge.setValue(sample.json);
+    setSchemaText(sample.schema ?? "");
+    setQueryText(sample.query ?? "");
+    setCompareText(sample.compare ?? "");
+  }, [sample, setSchemaText, setQueryText, setCompareText]);
+
+  // A share link in the address wins over the page's demo data.
+  useEffect(() => {
+    void loadFromShareLink();
+  }, []);
 
   return (
     <section aria-label="JSON editor" className="flex h-[900px] lg:h-[max(560px,calc(100dvh-10rem))] flex-col overflow-hidden border-y border-line bg-bg">
