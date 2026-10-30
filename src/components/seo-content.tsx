@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdSlot } from "./ad-slot";
+import { GUIDES } from "@/lib/guides";
 import { PAGES, SITE_NAME, pageUrl, type ToolPage } from "@/lib/site";
 
 const EXAMPLE = `{
@@ -27,6 +28,20 @@ export function SeoContent({ page }: { page: ToolPage }) {
           <section key={s.h}>
             <h2>{s.h}</h2>
             <p>{s.p}</p>
+          </section>
+        ))}
+
+        {GUIDES[page.slug]?.map((g) => (
+          <section key={g.h}>
+            <h2>{g.h}</h2>
+            {g.paras.map((t) => (
+              <p key={t}>{t}</p>
+            ))}
+            {g.code && (
+              <pre>
+                <code>{g.code}</code>
+              </pre>
+            )}
           </section>
         ))}
 

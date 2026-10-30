@@ -200,3 +200,18 @@ test("benchmarks page shows the measured table and honest limits", async ({ page
   await expect(page.getByText("What still pauses the page")).toBeVisible();
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
 });
+
+test.describe("guides", () => {
+  for (const [slug, heading] of [
+    ["/", "A practical guide to reading JSON"],
+    ["/large-json-viewer/", "A workflow for big files"],
+    ["/json-to-typescript/", "Optional, nullable and missing are three different things"],
+    ["/json-schema-validator/", "Drafts and what changed between them"],
+    ["/jsonpath-tester/", "Syntax cheat sheet"],
+  ] as const) {
+    test(`${slug} has its guide`, async ({ page }) => {
+      await page.goto(slug);
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+    });
+  }
+});
