@@ -3,16 +3,17 @@ import Link from "next/link";
 import { InfoPage } from "@/components/info-page";
 import { BENCHMARK } from "@/lib/benchmark-data";
 import { REPO_URL, SITE_NAME, SITE_URL } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 const TITLE = "How JSON Forge Opens 25 MB JSON Files: Benchmarks and Method";
 const DESCRIPTION =
-  "Measured times for opening 1, 5, 10 and 25 MB JSON files in the browser, how the Web Worker and virtualized tree work, what still pauses the page, and a script to reproduce the numbers.";
+  "Measured times for opening 1, 5, 10 and 25 MB JSON files in the browser, how the worker and tree work, what still pauses the page, and how to reproduce it.";
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/benchmarks/` },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/benchmarks/` },
+  ...socialMeta({ title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/benchmarks/` }),
 };
 
 const secs = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${ms} ms`);

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { InfoPage } from "@/components/info-page";
 import { CHEAT_SHEETS, cheatSheetBySlug } from "@/lib/cheat-sheets";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: sheet.title },
     description: sheet.description,
     alternates: { canonical },
-    openGraph: { title: sheet.title, description: sheet.description, url: canonical },
+    ...socialMeta({ title: sheet.title, description: sheet.description, url: canonical }),
   };
 }
 

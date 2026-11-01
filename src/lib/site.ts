@@ -50,7 +50,7 @@ export const PAGES: ToolPage[] = [
     slug: "",
     title: "JSON Viewer Online: Tree View, Formatter & Validator",
     description:
-      "Free online JSON viewer with a fast, searchable tree view. Open 20MB+ files in seconds, format, validate and convert JSON. 100% client-side: your data never leaves your browser.",
+      "Free online JSON viewer with a searchable tree. Open 20MB+ files in seconds, edit, format, validate and convert JSON. 100% in your browser, nothing uploaded.",
     h1: "JSON Viewer Online",
     intro:
       "View, search and edit JSON in a fast tree view, with instant validation and one-click formatting. Everything runs in your browser, so your data never leaves your device.",

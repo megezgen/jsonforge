@@ -58,7 +58,7 @@ export const EXAMPLES: ExamplePage[] = [
   {
     slug: "json-array-example",
     h1: "JSON Array Example",
-    title: "JSON Array Example: Numbers, Strings, Objects and Mixed Lists",
+    title: "JSON Array Example: Numbers, Strings and Objects",
     description: "JSON array examples: arrays of numbers, strings and objects, a mixed array, nested arrays and an empty array. Open the sample in the tree viewer.",
     intro: "Arrays hold ordered lists. This example shows the common shapes: a list of numbers, a list of strings, a list of records, a mixed list and an empty list.",
     data: {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolPageView } from "@/components/tool-page";
 import { PAGES, pageUrl } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: page.description,
     keywords: page.keywords,
     alternates: { canonical: pageUrl(page.slug) },
-    openGraph: { title: page.title, description: page.description, url: pageUrl(page.slug) },
+    ...socialMeta({ title: page.title, description: page.description, url: pageUrl(page.slug) }),
   };
 }
 

@@ -3,15 +3,16 @@ import Link from "next/link";
 import { InfoPage } from "@/components/info-page";
 import { CHEAT_SHEETS } from "@/lib/cheat-sheets";
 import { SITE_URL } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 const TITLE = "JSON Cheat Sheets";
-const DESCRIPTION = "One-page, printable references for JSON syntax, JSONPath and JSON Schema.";
+const DESCRIPTION = "One-page, printable JSON cheat sheets: syntax and escapes, JSONPath operators and filters, and JSON Schema keywords for every type.";
 
 export const metadata: Metadata = {
-  title: { absolute: `${TITLE}: Syntax, JSONPath, JSON Schema | JSON Forge` },
+  title: { absolute: `${TITLE}: Syntax, JSONPath, JSON Schema` },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/cheat-sheets/` },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/cheat-sheets/` },
+  ...socialMeta({ title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/cheat-sheets/` }),
 };
 
 export default function CheatSheets() {

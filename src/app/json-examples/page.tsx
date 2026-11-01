@@ -3,15 +3,16 @@ import Link from "next/link";
 import { InfoPage } from "@/components/info-page";
 import { EXAMPLES } from "@/lib/examples";
 import { SITE_URL } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 const TITLE = "JSON Examples and Sample Data";
-const DESCRIPTION = "Twelve ready-to-use JSON examples: simple, arrays, nested, user profile, paginated API, product catalog, order, blog posts, package.json, GeoJSON, config and weather.";
+const DESCRIPTION = "Twelve ready-to-use JSON examples: simple, arrays, nested, user profile, paginated API, catalog, order, blog, package.json, GeoJSON, config, weather.";
 
 export const metadata: Metadata = {
   title: { absolute: `${TITLE} | JSON Forge` },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/json-examples/` },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/json-examples/` },
+  ...socialMeta({ title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/json-examples/` }),
 };
 
 export default function JsonExamples() {

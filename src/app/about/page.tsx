@@ -3,7 +3,7 @@ import { ContactLine, InfoPage } from "@/components/info-page";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: { absolute: "About JSON Forge: Free, Private JSON Tools" },
   description: `${SITE_NAME} is a free, privacy-first JSON viewer, formatter, validator and converter that runs entirely in your browser.`,
   alternates: { canonical: `${SITE_URL}/about/` },
 };

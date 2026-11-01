@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ExamplePageView } from "@/components/example-page-view";
 import { EXAMPLES, exampleBySlug } from "@/lib/examples";
 import { SITE_URL } from "@/lib/site";
+import { socialMeta } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: { absolute: page.title },
     description: page.description,
     alternates: { canonical },
-    openGraph: { title: page.title, description: page.description, url: canonical },
+    ...socialMeta({ title: page.title, description: page.description, url: canonical }),
   };
 }
 

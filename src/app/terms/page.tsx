@@ -4,7 +4,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description: `Terms of use for ${SITE_NAME}.`,
+  description: `Terms of use for ${SITE_NAME}: how you may use the free tools, no warranty, and that the data you process stays in your browser.`,
   alternates: { canonical: `${SITE_URL}/terms/` },
 };
 

@@ -387,3 +387,31 @@ test.describe("error hints", () => {
     await expect(page.getByText("The JSON ends too early").first()).toBeVisible({ timeout: 15000 });
   });
 });
+
+test.describe("seo basics on every page in the sitemap", () => {
+  const decode = (s: string) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+
+  test("each page has a unique short title and description, one h1, a canonical and share images", async ({ request }) => {
+    test.setTimeout(120_000);
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname);
+    expect(paths.length).toBeGreaterThan(40);
+
+    const titles = new Map<string, string>();
+    const problems: string[] = [];
+    for (const path of paths) {
+      const html = await (await request.get(path)).text();
+      const title = decode(/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "");
+      const desc = decode(/<meta name="description" content="([^"]*)"/.exec(html)?.[1] ?? "");
+      if (!title || title.length > 60) problems.push(`${path}: title length ${title.length}`);
+      if (desc.length < 70 || desc.length > 160) problems.push(`${path}: description length ${desc.length}`);
+      if (titles.has(title)) problems.push(`${path}: duplicate title with ${titles.get(title)}`);
+      titles.set(title, path);
+      if ((html.match(/<h1[\s>]/g) ?? []).length !== 1) problems.push(`${path}: h1 count`);
+      if (!/<link rel="canonical" href="https:\/\/jsonforge\.dev\//.test(html)) problems.push(`${path}: canonical`);
+      if (!/property="og:image" content="https:\/\/jsonforge\.dev\/opengraph-image/.test(html)) problems.push(`${path}: og:image`);
+      if (!/name="twitter:image"/.test(html)) problems.push(`${path}: twitter:image`);
+    }
+    expect(problems).toEqual([]);
+  });
+});

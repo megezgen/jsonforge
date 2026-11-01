@@ -159,9 +159,9 @@ const data = res.status === 204 ? null : parseJson(await res.text());`,
   {
     slug: "expected-property-name-or-close-brace",
     h1: "Expected property name or '}' in JSON",
-    title: "Expected property name or '}' in JSON: Single Quotes and Unquoted Keys",
+    title: "Expected property name or '}' in JSON: Quotes and Keys",
     description:
-      "Fix \"Expected property name or '}' in JSON at position 1\": caused by single quotes or unquoted keys. See how JavaScript objects and Python dicts differ from JSON.",
+      "Fix \"Expected property name or '}' in JSON\": caused by single quotes or unquoted keys. How JavaScript objects and Python dicts differ from JSON.",
     messages: ["Expected property name or '}' in JSON at position 1 (line 1 column 2)", "Unexpected token ' in JSON at position 1 (older Chrome and Node.js)"],
     summary:
       "A JSON object has to start with a double-quoted key. The parser found something else where a key should be, usually a single quote or a bare word, so it complains that it expected a property name or the closing brace.",
@@ -274,7 +274,7 @@ const out = JSON.stringify(items);`,
   {
     slug: "expected-comma-or-closing-brace",
     h1: "Expected ',' or '}' after property value in JSON",
-    title: "Expected ',' or '}' after property value in JSON: Missing Comma",
+    title: "Expected ',' or '}' after property value in JSON",
     description:
       "Fix \"Expected ',' or '}' after property value in JSON\": a missing comma, a comment or a merge conflict in your JSON. Includes the array version of the error.",
     messages: ["Expected ',' or '}' after property value in JSON at position 8 (line 1 column 9)", "Expected ',' or ']' after array element in JSON at position 3 (line 1 column 4)"],
@@ -384,7 +384,7 @@ const out = JSON.stringify(items);`,
   {
     slug: "bad-control-character-in-string",
     h1: "Bad control character in string literal in JSON",
-    title: "Bad control character in string literal in JSON (and Bad escaped character)",
+    title: "Bad control character in string literal in JSON",
     description:
       "Fix \"Bad control character in string literal\" and \"Bad escaped character\": raw newlines, tabs and Windows paths inside JSON strings. Learn the escape rules.",
     messages: ["Bad control character in string literal in JSON at position 12 (line 1 column 13)", "Bad escaped character in JSON at position 13 (line 1 column 14)"],
@@ -483,7 +483,7 @@ line two",
   {
     slug: "unexpected-token-nan-bom",
     h1: "Unexpected token 'N' or an invisible character in JSON",
-    title: "Unexpected token 'N' (NaN, Infinity) or Invisible Character in JSON",
+    title: "Unexpected token 'N' in JSON: NaN, Infinity or BOM",
     description:
       "NaN, Infinity, undefined and a byte-order mark (BOM) are not valid JSON. See the errors they cause and how to export and read JSON correctly.",
     messages: [`Unexpected token 'N', "{"a": NaN}" is not valid JSON`, `Unexpected token '﻿', "﻿{}" is not valid JSON (the quoted first character is an invisible U+FEFF)`],
