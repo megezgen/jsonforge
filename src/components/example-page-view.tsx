@@ -4,6 +4,7 @@ import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 import { EXAMPLES, exampleBySlug, exampleJson, type ExamplePage } from "@/lib/examples";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { articleLd, breadcrumbLd, ldHtml } from "@/lib/jsonld";
 
 const CONVERT = [
   ["/json-to-typescript/", "TypeScript"],
@@ -19,18 +20,14 @@ const CONVERT = [
 export function ExampleJsonLd({ page }: { page: ExamplePage }) {
   const url = `${SITE_URL}/json-examples/${page.slug}/`;
   const data = [
-    { "@context": "https://schema.org", "@type": "TechArticle", headline: page.title, description: page.description, url, datePublished: "2026-10-30", author: { "@type": "Organization", name: SITE_NAME } },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: SITE_NAME, item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: "JSON examples", item: `${SITE_URL}/json-examples/` },
-        { "@type": "ListItem", position: 3, name: page.h1, item: url },
-      ],
-    },
+    articleLd({ headline: page.title, description: page.description, url }),
+    breadcrumbLd([
+      [SITE_NAME, `${SITE_URL}/`],
+      ["JSON examples", `${SITE_URL}/json-examples/`],
+      [page.h1, url],
+    ]),
   ];
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={ldHtml(data)} />;
 }
 
 export function ExamplePageView({ page }: { page: ExamplePage }) {
@@ -50,9 +47,12 @@ export function ExamplePageView({ page }: { page: ExamplePage }) {
       <main>
         <JsonTool initialTab="tree" sample={{ json: exampleJson(page) }} />
         <article className="prose-seo mx-auto max-w-3xl px-4 py-10">
-          <h2 className="!mt-0">The example</h2>
+          <h2 className="!mt-0">The example JSON</h2>
+          <pre>
+            <code>{exampleJson(page)}</code>
+          </pre>
           <p>
-            The JSON above is the example. Explore it in the Tree tab, press Download to save it as a .json file, or Share to send someone a link to it. All names, ids, emails and values are invented.
+            It is loaded into the viewer above. Explore it in the Tree tab, press Download to save it as a .json file, or Share to send someone a link to it. All names, ids, emails and values are invented.
           </p>
 
           <h2>Fields explained</h2>

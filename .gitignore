@@ -15,3 +15,6 @@ docs/
 # Local branding output
 branding/*.png
 public/sw.js
+
+# SEO audit output (local)
+seoreturn/

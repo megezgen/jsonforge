@@ -4,6 +4,8 @@ import { InfoPage } from "@/components/info-page";
 import { ERROR_PAGES } from "@/lib/error-pages";
 import { SITE_URL } from "@/lib/site";
 import { socialMeta } from "@/lib/seo";
+import { breadcrumbLd, collectionLd, ldHtml } from "@/lib/jsonld";
+import { SITE_NAME } from "@/lib/site";
 
 const TITLE = "Common JSON Errors and How to Fix Them";
 const DESCRIPTION = "Plain-language fixes for the JSON.parse errors developers meet most: unexpected token, unexpected end of input, trailing commas, bad escapes and more.";
@@ -18,6 +20,16 @@ export const metadata: Metadata = {
 export default function JsonErrors() {
   return (
     <InfoPage title={TITLE}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={ldHtml([
+          collectionLd({ name: TITLE, url: `${SITE_URL}/json-errors/`, description: DESCRIPTION }),
+          breadcrumbLd([
+            [SITE_NAME, `${SITE_URL}/`],
+            ["JSON errors", `${SITE_URL}/json-errors/`],
+          ]),
+        ])}
+      />
       <p>
         When JSON.parse fails, the message tells you where the parser gave up but not why. Each page below explains one error, lists its usual causes with broken and
         valid examples, and opens the tool with JSON that reproduces it so you can see exactly where it breaks. Messages are shown as Chrome, Edge and Node.js

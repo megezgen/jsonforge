@@ -111,7 +111,7 @@ test.describe("JSON Forge", () => {
     await page.goto("/json-to-csv/");
     await expect(page).toHaveTitle(/JSON to CSV/);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /json-to-csv\/$/);
-    await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+    expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThanOrEqual(2);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("JSON to CSV");
   });
 
@@ -198,7 +198,7 @@ test("benchmarks page shows the measured table and honest limits", async ({ page
   await expect(page).toHaveTitle(/Benchmarks/);
   await expect(page.getByRole("row")).toHaveCount(5);
   await expect(page.getByText("What still pauses the page")).toBeVisible();
-  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+  expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThanOrEqual(2);
 });
 
 test.describe("guides", () => {
@@ -305,7 +305,7 @@ test.describe("json error pages", () => {
       await expect(page.getByRole("heading", { name: "Common causes" })).toBeVisible();
       // The sample loaded into the tool really is invalid JSON.
       await expect(page.getByRole("status")).toContainText("Ln", { timeout: 15000 });
-      await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+      expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThanOrEqual(2);
     });
   }
 
@@ -334,7 +334,7 @@ test.describe("examples and cheat sheets", () => {
       await page.goto(`/json-examples/${slug}/`);
       await expect(page.getByRole("status")).toContainText("Valid JSON", { timeout: 15000 });
       await expect(page.getByRole("heading", { name: "Fields explained" })).toBeVisible();
-      await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+      expect(await page.locator('script[type="application/ld+json"]').count()).toBeGreaterThanOrEqual(2);
     });
   }
 
@@ -413,5 +413,64 @@ test.describe("seo basics on every page in the sitemap", () => {
       if (!/name="twitter:image"/.test(html)) problems.push(`${path}: twitter:image`);
     }
     expect(problems).toEqual([]);
+  });
+});
+
+test.describe("seo audit fixes", () => {
+  const ldTypes = async (page: Page) => {
+    const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
+    const types: string[] = [];
+    for (const b of blocks) {
+      const j = JSON.parse(b);
+      for (const node of Array.isArray(j) ? j : [j]) {
+        if (node["@graph"]) node["@graph"].forEach((g: { "@type": string }) => types.push(g["@type"]));
+        else types.push(node["@type"]);
+      }
+    }
+    return types;
+  };
+
+  test("every page declares one Organization and WebSite, and tool pages no longer emit HowTo", async ({ page }) => {
+    await page.goto("/json-diff/");
+    const types = await ldTypes(page);
+    expect(types).toEqual(expect.arrayContaining(["Organization", "WebSite", "WebApplication", "FAQPage", "BreadcrumbList"]));
+    expect(types).not.toContain("HowTo");
+  });
+
+  test("articles point to the shared organization and carry dateModified", async ({ page }) => {
+    await page.goto("/json-errors/trailing-comma/");
+    const blocks = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((b) => JSON.parse(b));
+    const article = blocks.flat().find((n) => n["@type"] === "TechArticle");
+    expect(article.author).toEqual({ "@id": "https://jsonforge.dev/#org" });
+    expect(article.dateModified).toBeTruthy();
+    expect(article.mainEntityOfPage["@id"]).toBe("https://jsonforge.dev/json-errors/trailing-comma/");
+  });
+
+  test("hub pages and About have typed schema", async ({ page }) => {
+    await page.goto("/json-errors/");
+    expect(await ldTypes(page)).toContain("CollectionPage");
+    await page.goto("/about/");
+    expect(await ldTypes(page)).toContain("AboutPage");
+  });
+
+  test("the example JSON is in the server HTML, outside script tags", async ({ request }) => {
+    const html = await (await request.get("/json-examples/weather-api-json/")).text();
+    const body = html.replace(/<script[\s\S]*?<\/script>/g, "");
+    expect(body).toContain("Exampleville");
+    expect(body).toContain("forecast");
+  });
+
+  test("error pages answer first and quote Python's wording", async ({ request }) => {
+    const html = await (await request.get("/json-errors/unexpected-end-of-json-input/")).text();
+    const body = html.replace(/<script[\s\S]*?<\/script>/g, "");
+    expect(body.indexOf("The parser reached the end of the text")).toBeGreaterThan(-1);
+    // the answer comes before the heading of the first article section
+    expect(body.indexOf("The parser reached the end of the text")).toBeLessThan(body.indexOf("What the error means"));
+    expect(body).toContain("Expecting value: line 1 column 1 (char 0)");
+  });
+
+  test("the unexpected-end demo really produces that message", async ({ page }) => {
+    await page.goto("/json-errors/unexpected-end-of-json-input/");
+    await expect(page.getByRole("status")).toContainText("Unexpected end of JSON input", { timeout: 15000 });
   });
 });

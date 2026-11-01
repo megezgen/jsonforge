@@ -5,6 +5,7 @@ import { ERROR_PAGES } from "@/lib/error-pages";
 import { EXAMPLES } from "@/lib/examples";
 import { GUIDES } from "@/lib/guides";
 import { PAGES, SITE_NAME, pageUrl, type ToolPage } from "@/lib/site";
+import { ORG_ID, WEBSITE_ID } from "@/lib/jsonld";
 
 const EXAMPLE = `{
   "name": "Ada",
@@ -120,7 +121,7 @@ export function SeoContent({ page }: { page: ToolPage }) {
   );
 }
 
-/** schema.org structured data: the web app, its FAQ and breadcrumbs. */
+/** schema.org structured data: the web app, its FAQ and breadcrumbs (HowTo was removed: Google retired its rich result). */
 export function JsonLd({ page }: { page: ToolPage }) {
   const data = [
     {
@@ -130,8 +131,12 @@ export function JsonLd({ page }: { page: ToolPage }) {
       url: pageUrl(page.slug),
       description: page.description,
       applicationCategory: "DeveloperApplication",
-      operatingSystem: "Any (runs in the browser)",
+      operatingSystem: "Any",
+      browserRequirements: "Requires JavaScript",
+      isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      publisher: { "@id": ORG_ID },
+      isPartOf: { "@id": WEBSITE_ID },
     },
     {
       "@context": "https://schema.org",
@@ -141,12 +146,6 @@ export function JsonLd({ page }: { page: ToolPage }) {
         name: f.q,
         acceptedAnswer: { "@type": "Answer", text: f.a },
       })),
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: page.howTo.title,
-      step: page.howTo.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text })),
     },
     {
       "@context": "https://schema.org",

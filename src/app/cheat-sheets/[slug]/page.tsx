@@ -5,6 +5,7 @@ import { InfoPage } from "@/components/info-page";
 import { CHEAT_SHEETS, cheatSheetBySlug } from "@/lib/cheat-sheets";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { socialMeta } from "@/lib/seo";
+import { articleLd, breadcrumbLd, ldHtml } from "@/lib/jsonld";
 
 export const dynamicParams = false;
 
@@ -31,18 +32,18 @@ export default async function CheatSheetRoute({ params }: Props) {
   const { slug } = await params;
   const sheet = cheatSheetBySlug(slug);
   if (!sheet) notFound();
-  const ld = {
-    "@context": "https://schema.org",
-    "@type": "TechArticle",
-    headline: sheet.title,
-    description: sheet.description,
-    url: `${SITE_URL}/cheat-sheets/${sheet.slug}/`,
-    datePublished: "2026-10-30",
-    author: { "@type": "Organization", name: SITE_NAME },
-  };
+  const url = `${SITE_URL}/cheat-sheets/${sheet.slug}/`;
+  const ld = [
+    articleLd({ headline: sheet.title, description: sheet.description, url }),
+    breadcrumbLd([
+      [SITE_NAME, `${SITE_URL}/`],
+      ["Cheat sheets", `${SITE_URL}/cheat-sheets/`],
+      [sheet.h1, url],
+    ]),
+  ];
   return (
     <InfoPage title={sheet.h1}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={ldHtml(ld)} />
       <p>{sheet.intro}</p>
       {sheet.tables.map((t) => (
         <section key={t.h}>

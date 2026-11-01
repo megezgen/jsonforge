@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { ldHtml, siteGraph } from "@/lib/jsonld";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={ldHtml(siteGraph)} />
       </head>
       <body className="min-h-dvh antialiased">
         {children}

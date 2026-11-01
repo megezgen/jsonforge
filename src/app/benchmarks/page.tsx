@@ -4,6 +4,7 @@ import { InfoPage } from "@/components/info-page";
 import { BENCHMARK } from "@/lib/benchmark-data";
 import { REPO_URL, SITE_NAME, SITE_URL } from "@/lib/site";
 import { socialMeta } from "@/lib/seo";
+import { articleLd, breadcrumbLd, ldHtml } from "@/lib/jsonld";
 
 const TITLE = "How JSON Forge Opens 25 MB JSON Files: Benchmarks and Method";
 const DESCRIPTION =
@@ -19,18 +20,16 @@ export const metadata: Metadata = {
 const secs = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${ms} ms`);
 
 export default function Benchmarks() {
-  const article = {
-    "@context": "https://schema.org",
-    "@type": "TechArticle",
-    headline: TITLE,
-    description: DESCRIPTION,
-    datePublished: "2026-10-30",
-    author: { "@type": "Organization", name: SITE_NAME },
-    mainEntityOfPage: `${SITE_URL}/benchmarks/`,
-  };
+  const article = [
+    articleLd({ headline: TITLE, description: DESCRIPTION, url: `${SITE_URL}/benchmarks/` }),
+    breadcrumbLd([
+      [SITE_NAME, `${SITE_URL}/`],
+      ["Benchmarks", `${SITE_URL}/benchmarks/`],
+    ]),
+  ];
   return (
     <InfoPage title="How JSON Forge opens 25 MB JSON files" updated={BENCHMARK.date}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={ldHtml(article)} />
       <p>
         Most online JSON viewers slow down or freeze on big files. {SITE_NAME} is built to stay usable on them. This page shows measured numbers, how it
         works, and, just as important, what it does <em>not</em> fix yet. Everything here can be reproduced with a script in the{" "}

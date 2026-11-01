@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ContactLine, InfoPage } from "@/components/info-page";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { aboutLd, breadcrumbLd, ldHtml } from "@/lib/jsonld";
 
 export const metadata: Metadata = {
   title: { absolute: "About JSON Forge: Free, Private JSON Tools" },
@@ -11,6 +12,16 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <InfoPage title={`About ${SITE_NAME}`}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={ldHtml([
+          aboutLd(`${SITE_URL}/about/`),
+          breadcrumbLd([
+            [SITE_NAME, `${SITE_URL}/`],
+            ["About", `${SITE_URL}/about/`],
+          ]),
+        ])}
+      />
       <p>
         {SITE_NAME} is a free set of JSON tools for developers: a fast tree viewer, formatter, validator, diff and converters to TypeScript, Go, Python, YAML,
         CSV and XML.

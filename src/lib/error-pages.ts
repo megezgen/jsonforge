@@ -15,8 +15,12 @@ export interface ErrorPage {
   h1: string;
   title: string;
   description: string;
+  /** A 40-60 word cause and fix, shown directly under the heading, before the tool. */
+  answer: string;
   /** Exact messages as printed by Chrome and Node.js. */
   messages: string[];
+  /** Exact messages from Python's json module (checked on Python 3.12). */
+  python: string[];
   summary: string;
   causes: ErrorCause[];
   code: { label: string; text: string };
@@ -35,6 +39,8 @@ const LOCATE = [
 export const ERROR_PAGES: ErrorPage[] = [
   {
     slug: "unexpected-token-less-than",
+    answer: "The text you parsed starts with <, so it is HTML, not JSON. A server almost certainly returned a web page: a 404 or 500 error page, a login page, or your app's index.html. Fix the request, not the JSON: check the URL, the HTTP status and the Content-Type before calling JSON.parse.",
+    python: ["Expecting value: line 1 column 1 (char 0)"],
     h1: "Unexpected token '<' in JSON at position 0",
     title: "Unexpected token '<' in JSON at position 0: Causes and Fixes",
     description:
@@ -96,6 +102,8 @@ const data = await res.json();`,
   },
   {
     slug: "unexpected-end-of-json-input",
+    answer: "The parser reached the end of the text while it still expected more, so the JSON is empty or cut off. Common causes are an empty response body (for example a 204), a connection or proxy that cut the response short, or a file that was not fully written. Check the length of the text before parsing it.",
+    python: ["Expecting value: line 1 column 1 (char 0)  (empty text)","Expecting ',' delimiter: line 1 column 30 (char 29)  (cut off inside an array)","Unterminated string starting at: line 1 column 10 (char 9)  (cut off inside a string)"],
     h1: "Unexpected end of JSON input",
     title: "Unexpected end of JSON input: Causes and Fixes",
     description:
@@ -138,12 +146,12 @@ const data = await res.json();`,
 }
 
 const res = await fetch(url);
+if (!res.ok) throw new Error("HTTP " + res.status);
 const data = res.status === 204 ? null : parseJson(await res.text());`,
     },
     sample: `{
   "id": 7,
-  "name": "Ada",
-  "tags": ["math", "code"`,
+  "name":`,
     faq: [
       {
         q: "How do I know whether it is empty or truncated?",
@@ -158,6 +166,8 @@ const data = res.status === 204 ? null : parseJson(await res.text());`,
   },
   {
     slug: "expected-property-name-or-close-brace",
+    answer: "A JSON object key was not written in double quotes. Single quotes and unquoted keys are valid in JavaScript and Python but not in JSON, so text copied from console output or a Python print fails here. Put every key and string in double quotes, or press Fix JSON to rewrite them.",
+    python: ["Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"],
     h1: "Expected property name or '}' in JSON",
     title: "Expected property name or '}' in JSON: Quotes and Keys",
     description:
@@ -216,6 +226,8 @@ text = json.dumps({"name": "Ada", "active": True, "manager": None})`,
   },
   {
     slug: "trailing-comma",
+    answer: "JSON does not allow a comma after the last item of an object or array. After the comma the parser expects another key or value and finds a closing brace or bracket instead. Remove the final comma, or press Fix JSON. Files such as tsconfig.json accept trailing commas only because they are not strict JSON.",
+    python: ["Expecting property name enclosed in double quotes: line 1 column 9 (char 8)  (object)","Expecting value: line 1 column 10 (char 9)  (array)"],
     h1: "Trailing comma in JSON",
     title: "Trailing Comma in JSON: Expected double-quoted property name",
     description:
@@ -273,6 +285,8 @@ const out = JSON.stringify(items);`,
   },
   {
     slug: "expected-comma-or-closing-brace",
+    answer: "Two items are not separated by a comma, so the parser stopped where the second one starts. A comment (// or /* */) in the file has the same effect, because JSON has no comments. Add the missing comma at the end of the previous line, or remove the comment.",
+    python: ["Expecting ',' delimiter: line 1 column 9 (char 8)"],
     h1: "Expected ',' or '}' after property value in JSON",
     title: "Expected ',' or '}' after property value in JSON",
     description:
@@ -331,6 +345,8 @@ const out = JSON.stringify(items);`,
   },
   {
     slug: "undefined-is-not-valid-json",
+    answer: "JSON.parse was given something that is not text: undefined, or an object that was already parsed. It converts the value to a string first and fails on the text undefined or [object Object]. The fix is in your code: check that the value exists, and do not parse the result of res.json() or an axios response again.",
+    python: ["TypeError: the JSON object must be str, bytes or bytearray, not NoneType  (Python's json.loads(None))"],
     h1: "\"undefined\" is not valid JSON",
     title: "\"undefined\" or \"[object Object]\" is not valid JSON",
     description:
@@ -383,6 +399,8 @@ const out = JSON.stringify(items);`,
   },
   {
     slug: "bad-control-character-in-string",
+    answer: "A string contains a character that must be escaped: a raw line break or tab, or a backslash that does not start a valid escape, such as the U in C:Users. Write line breaks as \n, tabs as \t and each backslash as \\. JSON.stringify does this for you.",
+    python: ["Invalid control character at: line 1 column 13 (char 12)","Invalid escape: line 1 column 13 (char 12)"],
     h1: "Bad control character in string literal in JSON",
     title: "Bad control character in string literal in JSON",
     description:
@@ -434,6 +452,8 @@ line two",
   },
   {
     slug: "unexpected-non-whitespace-after-json",
+    answer: "The parser read one complete JSON value and then found more text after it. A JSON document can contain only one top-level value. Typical causes are two objects side by side, a JSON Lines file (one object per line), an extra closing brace, or text after the final bracket. Parse JSON Lines line by line.",
+    python: ["Extra data: line 1 column 9 (char 8)"],
     h1: "Unexpected non-whitespace character after JSON",
     title: "Unexpected non-whitespace character after JSON at position N",
     description:
@@ -482,6 +502,8 @@ line two",
   },
   {
     slug: "unexpected-token-nan-bom",
+    answer: "The text contains something that is not valid JSON but looks harmless: NaN, Infinity or undefined as a value, or an invisible byte-order mark (BOM) at the very start of a file. Replace NaN and Infinity with null, strip the BOM before parsing, and save files as UTF-8 without BOM.",
+    python: ["Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)","Python accepts NaN and Infinity by default (json.loads('{\"a\": NaN}') returns nan), which is how invalid JSON gets written; use allow_nan=False when writing."],
     h1: "Unexpected token 'N' or an invisible character in JSON",
     title: "Unexpected token 'N' in JSON: NaN, Infinity or BOM",
     description:
