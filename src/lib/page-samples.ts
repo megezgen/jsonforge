@@ -55,6 +55,11 @@ export const PAGE_SAMPLES: Record<string, PageSample> = {
     json: JSON.stringify({ name: "api-server", version: "1.4.0", replicas: 2, features: { cache: true, beta: false }, regions: ["eu-west", "us-east"] }, null, 2),
     compare: JSON.stringify({ name: "api-server", version: "1.5.0", replicas: 3, features: { cache: true, beta: true, tracing: true }, regions: ["eu-west", "us-east", "ap-south"] }, null, 2),
   },
+  "diff-checker": {
+    json: "Dear team,\n\nThe release is planned for Friday.\nPlease review the changelog before then.\nStaging is available at staging.example.com.\n\nThanks,\nAda",
+    compare:
+      "Dear team,\n\nThe release is planned for Monday.\nPlease review the changelog and the migration notes before then.\nStaging is available at staging.example.com.\nRollback steps are in the wiki.\n\nThanks,\nAda",
+  },
   "json-schema-validator": {
     json: JSON.stringify({ id: "42", name: "", email: "not-an-email", age: -3, tags: ["a", "a"] }, null, 2),
     schema: JSON.stringify(

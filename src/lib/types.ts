@@ -69,6 +69,19 @@ export interface DiffLine {
   text: string;
   oldNo: number | null;
   newNo: number | null;
+  /** Word-level pieces for changed lines that have a counterpart; `c` marks the part that differs. */
+  segs?: { t: string; c: boolean }[];
+}
+
+export interface DiffOptions {
+  /** "json" parses and normalizes both sides first; "text" compares the raw text line by line. */
+  mode: "json" | "text";
+  /** JSON mode: sort keys before comparing. */
+  sortKeys: boolean;
+  /** Text mode: ignore leading, trailing and repeated whitespace. */
+  ignoreWhitespace: boolean;
+  /** Text mode: ignore upper/lower case. */
+  ignoreCase: boolean;
 }
 
 export type DiffResponse =

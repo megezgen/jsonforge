@@ -1,11 +1,12 @@
 import { Validator, type Schema, type SchemaDraft } from "@cfworker/json-schema";
-import { diffLines } from "diff";
+import { diffArrays, diffWordsWithSpace } from "diff";
 import { JSONPath } from "jsonpath-plus";
 import { jsonrepair } from "jsonrepair";
 import { generateCode } from "./codegen";
 import type {
   CodeLang,
   DiffLine,
+  DiffOptions,
   DiffResponse,
   IndentOption,
   JsonStats,
@@ -455,31 +456,70 @@ export function validateSchema(schemaText: string): SchemaResult {
 
 // ---------- diff ----------
 
-export function diff(left: string, right: string, sortKeys: boolean): DiffResponse {
-  let a: unknown;
-  let b: unknown;
-  try {
-    a = JSON.parse(left);
-  } catch (err) {
-    return { ok: false, side: "left", error: toParseError(err, left) };
+const MAX_WORD_DIFF_PAIRS = 4000;
+const MAX_WORD_DIFF_LINE = 2000;
+
+/** Marks which words differ between a removed line and the line that replaced it. */
+function wordSegments(oldLine: string, newLine: string): { del: { t: string; c: boolean }[]; add: { t: string; c: boolean }[] } {
+  const del: { t: string; c: boolean }[] = [];
+  const add: { t: string; c: boolean }[] = [];
+  for (const p of diffWordsWithSpace(oldLine, newLine)) {
+    if (p.added) add.push({ t: p.value, c: true });
+    else if (p.removed) del.push({ t: p.value, c: true });
+    else {
+      del.push({ t: p.value, c: false });
+      add.push({ t: p.value, c: false });
+    }
   }
-  try {
-    b = JSON.parse(right);
-  } catch (err) {
-    return { ok: false, side: "right", error: toParseError(err, right) };
+  return { del, add };
+}
+
+const pendingAdd = new Map<string, { t: string; c: boolean }[]>();
+
+export function diff(left: string, right: string, options: DiffOptions): DiffResponse {
+  let la: string;
+  let lb: string;
+  if (options.mode === "text") {
+    la = left.replace(/\r\n?/g, "\n");
+    lb = right.replace(/\r\n?/g, "\n");
+  } else {
+    let a: unknown;
+    let b: unknown;
+    try {
+      a = JSON.parse(left);
+    } catch (err) {
+      return { ok: false, side: "left", error: toParseError(err, left) };
+    }
+    try {
+      b = JSON.parse(right);
+    } catch (err) {
+      return { ok: false, side: "right", error: toParseError(err, right) };
+    }
+    la = stringify(a, "2", options.sortKeys);
+    lb = stringify(b, "2", options.sortKeys);
   }
-  const la = stringify(a, "2", sortKeys);
-  const lb = stringify(b, "2", sortKeys);
-  const parts = diffLines(la, lb);
+  pendingAdd.clear();
+  const text = options.mode === "text";
+  const norm = (l: string) => {
+    let v = l;
+    if (text && options.ignoreWhitespace) v = v.trim().replace(/\s+/g, " ");
+    if (text && options.ignoreCase) v = v.toLowerCase();
+    return v;
+  };
+  const parts = diffArrays(la.split("\n"), lb.split("\n"), { comparator: (x: string, y: string) => norm(x) === norm(y) });
   const lines: DiffLine[] = [];
   let oldNo = 1;
   let newNo = 1;
   let added = 0;
   let removed = 0;
   let truncated = false;
-  outer: for (const part of parts) {
-    const text = part.value.endsWith("\n") ? part.value.slice(0, -1) : part.value;
-    for (const line of text.split("\n")) {
+  let pairs = 0;
+  outer: for (let pi = 0; pi < parts.length; pi++) {
+    const part = parts[pi];
+    if (!part) continue;
+    const rows = part.value;
+    const start = lines.length;
+    for (const line of rows) {
       if (lines.length >= MAX_DIFF_LINES) {
         truncated = true;
         break outer;
@@ -491,7 +531,29 @@ export function diff(left: string, right: string, sortKeys: boolean): DiffRespon
         lines.push({ kind: "del", text: line, oldNo: oldNo++, newNo: null });
         removed++;
       } else {
+        // With "ignore" options the new text is shown for matching lines, as in most diff tools.
         lines.push({ kind: "same", text: line, oldNo: oldNo++, newNo: newNo++ });
+      }
+    }
+    // A removed block directly followed by an added block is an edit: highlight the words that changed.
+    const next = parts[pi + 1];
+    if (part.removed && next?.added) {
+      const n = Math.min(rows.length, next.value.length);
+      for (let k = 0; k < n && pairs < MAX_WORD_DIFF_PAIRS; k++) {
+        const o = rows[k] ?? "";
+        const w = next.value[k] ?? "";
+        if (o.length > MAX_WORD_DIFF_LINE || w.length > MAX_WORD_DIFF_LINE) continue;
+        const { del, add } = wordSegments(o, w);
+        pairs++;
+        const target = lines[start + k];
+        if (target) target.segs = del;
+        pendingAdd.set(`${pi + 1}:${k}`, add);
+      }
+    } else if (part.added) {
+      for (let k = 0; k < rows.length; k++) {
+        const segs = pendingAdd.get(`${pi}:${k}`);
+        const target = lines[start + k];
+        if (segs && target) target.segs = segs;
       }
     }
   }

@@ -19,6 +19,8 @@ export interface ToolPage {
   lang?: CodeLang;
   indent?: IndentOption;
   sortKeys?: boolean;
+  /** Diff tab: compare plain text instead of JSON. */
+  diffMode?: "json" | "text";
   /** Extra unique prose rendered below the how-to. */
   sections?: { h: string; p: string }[];
   howTo: { title: string; steps: string[] };
@@ -301,6 +303,51 @@ export const PAGES: ToolPage[] = [
       ...COMMON_FAQ,
     ],
     keywords: ["json diff", "compare json", "json compare online", "json difference"],
+  },
+  {
+    slug: "diff-checker",
+    title: "Diff Checker Online: Compare Text and JSON Side by Side",
+    description:
+      "Free diff checker: paste two texts or JSON documents and see every change side by side, with the changed words highlighted. Private, nothing is uploaded.",
+    h1: "Diff Checker",
+    intro:
+      "Compare two pieces of text or JSON side by side and see exactly which lines and words changed. Nothing you paste is uploaded: the comparison runs in your browser.",
+    tab: "diff",
+    diffMode: "text",
+    howTo: {
+      title: "How to compare two texts",
+      steps: [
+        "Paste the original text into the editor on the left.",
+        "Paste the changed text into the comparison box in the Diff tab.",
+        "Read the side-by-side view: removed lines on the left, added lines on the right, changed words highlighted. Use Swap sides to reverse the direction.",
+      ],
+    },
+    sections: [
+      {
+        h: "Side by side or unified",
+        p: "Side by side puts the original and the changed version in two columns, with edited lines on the same row, so you can read a change in context. Unified shows one column with removed and added lines stacked, which is closer to git diff and easier to copy from.",
+      },
+      {
+        h: "Plain text or JSON",
+        p: "Plain text compares exactly what you pasted, line by line, with options to ignore whitespace and letter case. Switch to JSON to parse both sides first: formatting is normalized and key order can be ignored, so only real data changes show up. Use it for code, config files, logs, contracts or any two versions of the same text.",
+      },
+    ],
+    faq: [
+      {
+        q: "Is the text I paste uploaded anywhere?",
+        a: "No. The comparison runs in a Web Worker inside your browser tab. Nothing is sent to a server, so it is safe for source code, configuration and other private text.",
+      },
+      {
+        q: "How does it highlight changes inside a line?",
+        a: "When a line is edited, the words that differ are marked more strongly than the rest of the line, so a one-word change in a long line is easy to spot.",
+      },
+      {
+        q: "Can it ignore whitespace and case?",
+        a: "Yes. In plain text mode, tick Ignore whitespace to skip differences in spaces and indentation, and Ignore case to treat upper and lower case as equal.",
+      },
+      ...COMMON_FAQ,
+    ],
+    keywords: ["diff checker", "text compare", "compare two texts online", "online diff tool", "side by side diff"],
   },
   {
     slug: "json-minify",

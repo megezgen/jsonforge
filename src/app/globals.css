@@ -22,7 +22,9 @@
   --t-bool: #569cd6;
   --t-null: #c586c0;
   --add: rgba(78, 201, 176, 0.16);
+  --add-strong: rgba(78, 201, 176, 0.38);
   --del: rgba(244, 135, 113, 0.16);
+  --del-strong: rgba(244, 135, 113, 0.4);
 }
 
 :root.light {
@@ -45,7 +47,9 @@
   --t-bool: #0000ff;
   --t-null: #af00db;
   --add: rgba(11, 122, 95, 0.14);
+  --add-strong: rgba(11, 122, 95, 0.3);
   --del: rgba(198, 40, 40, 0.13);
+  --del-strong: rgba(198, 40, 40, 0.28);
 }
 
 @theme inline {

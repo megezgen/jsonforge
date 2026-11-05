@@ -231,12 +231,14 @@ export function JsonTool({
   initialCodeLang = "typescript",
   initialIndent = "2",
   initialSortKeys = false,
+  diffMode = "json",
   sample,
 }: {
   initialTab?: OutputTab;
   initialCodeLang?: CodeLang;
   initialIndent?: IndentOption;
   initialSortKeys?: boolean;
+  diffMode?: "json" | "text";
   sample?: PageSample;
 }) {
   useShortcuts();
@@ -318,7 +320,7 @@ export function JsonTool({
               <TextView />
             </TabsContent>
             <TabsContent value="diff">
-              <DiffView />
+              <DiffView defaultMode={diffMode} />
             </TabsContent>
             <TabsContent value="schema">
               <SchemaView />

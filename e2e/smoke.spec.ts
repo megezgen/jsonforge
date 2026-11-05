@@ -107,6 +107,37 @@ test.describe("JSON Forge", () => {
     await expect(page.getByText(/^\+\d+/)).toBeVisible();
   });
 
+  test("diff checker compares plain text side by side with changed words marked", async ({ page }) => {
+    await page.goto("/diff-checker/");
+    await expect(page.getByText(/^\+\d+/)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("Editor (original)")).toBeVisible();
+    await expect(page.getByText("Comparison (changed)")).toBeVisible();
+    // The edited line "Friday" -> "Monday": only the changed word gets the strong highlight.
+    await expect(page.locator("span.bg-\\[var\\(--del-strong\\)\\]", { hasText: "Friday" }).first()).toBeVisible();
+    await expect(page.locator("span.bg-\\[var\\(--add-strong\\)\\]", { hasText: "Monday" }).first()).toBeVisible();
+    await page.getByRole("button", { name: "Unified" }).click();
+    await expect(page.getByText("Editor (original)")).toHaveCount(0);
+    await expect(page.getByText("The release is planned for", { exact: false }).first()).toBeVisible();
+  });
+
+  test("diff checker can ignore case and swap the sides", async ({ page }) => {
+    await page.goto("/diff-checker/");
+    await expect(page.getByText(/^\+\d+/)).toBeVisible({ timeout: 10000 });
+    await page.getByLabel("Compare the editor content against this text:").fill("DEAR TEAM,\n\nTHE RELEASE IS PLANNED FOR FRIDAY.");
+    await page.getByLabel("Ignore case").check();
+    await expect(page.getByText(/^\+\d+/)).toContainText("+0");
+    await page.getByRole("button", { name: "Swap sides" }).click();
+    await expect(page.getByLabel("Compare the editor content against this text:")).toHaveValue(/Dear team/);
+  });
+
+  test("diff in JSON mode still reports invalid input and offers plain text", async ({ page }) => {
+    await page.goto("/json-diff/");
+    await page.getByLabel("Compare the editor content against this JSON:").fill("not json");
+    await expect(page.getByText(/not valid JSON/)).toBeVisible();
+    await page.getByRole("button", { name: "Plain text" }).click();
+    await expect(page.getByText(/^\+\d+/)).toBeVisible();
+  });
+
   test("tool pages expose SEO metadata", async ({ page }) => {
     await page.goto("/json-to-csv/");
     await expect(page).toHaveTitle(/JSON to CSV/);
