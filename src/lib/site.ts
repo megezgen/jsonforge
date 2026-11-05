@@ -19,8 +19,8 @@ export interface ToolPage {
   lang?: CodeLang;
   indent?: IndentOption;
   sortKeys?: boolean;
-  /** Diff tab: compare plain text instead of JSON. */
-  diffMode?: "json" | "text";
+  /** Replaces the JSON editor with a purpose-built tool. */
+  tool?: "diff-checker";
   /** Extra unique prose rendered below the how-to. */
   sections?: { h: string; p: string }[];
   howTo: { title: string; steps: string[] };
@@ -313,7 +313,7 @@ export const PAGES: ToolPage[] = [
     intro:
       "Compare two pieces of text or JSON side by side and see exactly which lines and words changed. Nothing you paste is uploaded: the comparison runs in your browser.",
     tab: "diff",
-    diffMode: "text",
+    tool: "diff-checker",
     howTo: {
       title: "How to compare two texts",
       steps: [

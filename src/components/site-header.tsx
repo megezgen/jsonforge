@@ -3,12 +3,13 @@ import { Braces, Coffee, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { PAGES, SITE_NAME, SUPPORT_URL } from "@/lib/site";
 
-const NAV = PAGES.filter((p) => ["", "json-validator", "json-to-typescript", "json-diff"].includes(p.slug));
+const NAV = PAGES.filter((p) => ["", "json-validator", "json-to-typescript", "json-diff", "diff-checker"].includes(p.slug));
 const SHORT: Record<string, string> = {
   "": "Viewer",
   "json-validator": "Validator",
   "json-to-typescript": "JSON to TS",
-  "json-diff": "Diff",
+  "json-diff": "JSON Diff",
+  "diff-checker": "Diff Checker",
 };
 
 export function SiteHeader() {

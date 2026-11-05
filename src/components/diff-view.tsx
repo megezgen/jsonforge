@@ -18,7 +18,25 @@ interface SplitRow {
   r: DiffLine | null;
 }
 
-/** Lines the user may want to see: every change plus two lines of context around it. */
+export interface DiffSettings {
+  mode: Mode;
+  view: View;
+  ignoreOrder: boolean;
+  ignoreWhitespace: boolean;
+  ignoreCase: boolean;
+  changesOnly: boolean;
+}
+
+export const DEFAULT_SETTINGS: DiffSettings = {
+  mode: "json",
+  view: "split",
+  ignoreOrder: true,
+  ignoreWhitespace: false,
+  ignoreCase: false,
+  changesOnly: false,
+};
+
+/** Every change plus two lines of context around it. */
 function withContext(lines: DiffLine[]): DiffLine[] {
   const keep = new Set<number>();
   lines.forEach((l, i) => {
@@ -68,62 +86,179 @@ function LineText({ line }: { line: DiffLine }) {
   );
 }
 
-export function DiffView({ defaultMode = "json" }: { defaultMode?: Mode }) {
-  const version = useApp((s) => s.version);
-  const status = useApp((s) => s.status);
-  const sortKeys = useApp((s) => s.sortKeys);
-  const compareText = useApp((s) => s.compareText);
-  const setCompareText = useApp((s) => s.setCompareText);
-  const [mode, setMode] = useState<Mode>(defaultMode);
-  const [view, setView] = useState<View>("split");
-  const [ignoreOrder, setIgnoreOrder] = useState(true);
-  const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
-  const [ignoreCase, setIgnoreCase] = useState(false);
-  const [changesOnly, setChangesOnly] = useState(false);
+/** Runs the comparison in the worker, debounced, and ignores answers that arrive out of order. */
+export function useDiffResult(getLeft: () => string, right: string, s: DiffSettings, sortKeys: boolean, deps: unknown[]) {
   const [result, setResult] = useState<DiffResponse | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const seq = useRef(0);
-
-  useEffect(() => setMode(defaultMode), [defaultMode]);
-
   useEffect(() => {
-    if (!compareText.trim()) {
+    if (!right.trim()) {
       setResult(null);
       return;
     }
     const id = ++seq.current;
     const t = setTimeout(() => {
       engine
-        .diff(editorBridge.getValue(), compareText, { mode, sortKeys: ignoreOrder || sortKeys, ignoreWhitespace, ignoreCase })
+        .diff(getLeft(), right, { mode: s.mode, sortKeys: s.ignoreOrder || sortKeys, ignoreWhitespace: s.ignoreWhitespace, ignoreCase: s.ignoreCase })
         .then((r) => {
           if (id === seq.current) setResult(r);
         })
         .catch(() => {});
     }, 300);
     return () => clearTimeout(t);
-  }, [compareText, mode, ignoreOrder, ignoreWhitespace, ignoreCase, sortKeys, version, status]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [right, s.mode, s.ignoreOrder, s.ignoreWhitespace, s.ignoreCase, sortKeys, ...deps]);
+  return result;
+}
 
+export function DiffControls({
+  s,
+  set,
+  result,
+  children,
+}: {
+  s: DiffSettings;
+  set: (p: Partial<DiffSettings>) => void;
+  result: DiffResponse | null;
+  children?: React.ReactNode;
+}) {
+  const json = s.mode === "json";
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+      <Segmented
+        label="Compare as"
+        value={s.mode}
+        onChange={(mode) => set({ mode })}
+        options={[
+          ["json", "JSON"],
+          ["text", "Plain text"],
+        ]}
+      />
+      <Segmented
+        label="Layout"
+        value={s.view}
+        onChange={(view) => set({ view })}
+        options={[
+          ["split", "Side by side"],
+          ["unified", "Unified"],
+        ]}
+      />
+      {json ? (
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <input type="checkbox" checked={s.ignoreOrder} onChange={(e) => set({ ignoreOrder: e.target.checked })} /> Ignore key order
+        </label>
+      ) : (
+        <>
+          <label className="flex cursor-pointer items-center gap-1.5">
+            <input type="checkbox" checked={s.ignoreWhitespace} onChange={(e) => set({ ignoreWhitespace: e.target.checked })} /> Ignore whitespace
+          </label>
+          <label className="flex cursor-pointer items-center gap-1.5">
+            <input type="checkbox" checked={s.ignoreCase} onChange={(e) => set({ ignoreCase: e.target.checked })} /> Ignore case
+          </label>
+        </>
+      )}
+      <label className="flex cursor-pointer items-center gap-1.5">
+        <input type="checkbox" checked={s.changesOnly} onChange={(e) => set({ changesOnly: e.target.checked })} /> Changes only
+      </label>
+      {children}
+      {result?.ok && (
+        <span className="ml-auto">
+          <span className="text-ok">+{formatNumber(result.added)}</span> <span className="text-danger">−{formatNumber(result.removed)}</span>
+          {result.added + result.removed === 0 && " · identical"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+export function SwapButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1 rounded-md border border-line px-2 py-0.5 hover:bg-panel2 hover:text-fg"
+      title="Swap the original and the changed text"
+    >
+      <ArrowLeftRight className="size-3" aria-hidden /> Swap sides
+    </button>
+  );
+}
+
+/** The comparison itself: a banner, the two column headings and the virtualized lines. */
+export function DiffResultView({
+  result,
+  s,
+  leftTitle,
+  rightTitle,
+  className,
+}: {
+  result: DiffResponse;
+  s: DiffSettings;
+  leftTitle: string;
+  rightTitle: string;
+  className?: string;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const lines = useMemo(() => {
-    if (!result || !result.ok) return [];
-    return changesOnly ? withContext(result.lines) : result.lines;
-  }, [result, changesOnly]);
+    if (!result.ok) return [];
+    return s.changesOnly ? withContext(result.lines) : result.lines;
+  }, [result, s.changesOnly]);
+  const view = s.view;
   const rows = useMemo(() => (view === "split" ? toSplit(lines) : []), [lines, view]);
-  const count = view === "split" ? rows.length : lines.length;
-
   const virtualizer = useVirtualizer({
-    count,
+    count: view === "split" ? rows.length : lines.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW,
     overscan: 30,
   });
+  if (!result.ok) return null;
+  return (
+    <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
+      {result.truncated && <div className="bg-warn/15 px-3 py-1 text-xs text-warn">Diff truncated to the first {formatNumber(result.lines.length)} lines.</div>}
+      {view === "split" && (
+        <div className="grid grid-cols-2 border-b border-line text-xs text-muted" aria-hidden>
+          <div className="px-3 py-1">{leftTitle}</div>
+          <div className="border-l border-line px-3 py-1">{rightTitle}</div>
+        </div>
+      )}
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto font-mono text-xs">
+        <div style={{ height: virtualizer.getTotalSize(), position: "relative", minWidth: view === "unified" ? "max-content" : undefined }}>
+          {virtualizer.getVirtualItems().map((v) =>
+            view === "split" ? (
+              <SplitRowView key={v.index} index={v.index} start={v.start} row={rows[v.index]} measure={virtualizer.measureElement} />
+            ) : (
+              <UnifiedRowView key={v.index} start={v.start} line={lines[v.index]} />
+            ),
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
+export function invalidMessage(result: DiffResponse | null, leftName: string, rightName: string): string | null {
+  if (!result || result.ok) return null;
+  const where = result.side === "left" ? leftName : rightName;
+  const at = result.error.line ? ` (line ${result.error.line})` : "";
+  return `The ${where} is not valid JSON: ${result.error.message}${at}. Switch to Plain text to compare it anyway.`;
+}
+
+/** The Diff tab next to the editor: the editor holds the original, a box holds the changed JSON. */
+export function DiffView() {
+  const version = useApp((s) => s.version);
+  const status = useApp((s) => s.status);
+  const sortKeys = useApp((s) => s.sortKeys);
+  const compareText = useApp((s) => s.compareText);
+  const setCompareText = useApp((s) => s.setCompareText);
+  const [s, setS] = useState<DiffSettings>(DEFAULT_SETTINGS);
+  const set = (p: Partial<DiffSettings>) => setS((o) => ({ ...o, ...p }));
+  const result = useDiffResult(() => editorBridge.getValue(), compareText, s, sortKeys, [version, status]);
+  const json = s.mode === "json";
   const swap = () => {
     const left = editorBridge.getValue();
     editorBridge.setValue(compareText);
     setCompareText(left);
   };
-
-  const json = mode === "json";
+  const invalid = invalidMessage(result, "editor content", "comparison JSON");
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-col gap-1 border-b border-line p-2">
@@ -138,89 +273,13 @@ export function DiffView({ defaultMode = "json" }: { defaultMode?: Mode }) {
           placeholder={json ? 'Paste the second JSON here, e.g. {"name": "Ada"}' : "Paste the second text here"}
           className="h-24 resize-y rounded-md border border-line bg-bg p-2 font-mono text-xs outline-none focus:border-accent"
         />
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-          <Segmented
-            label="Compare as"
-            value={mode}
-            onChange={setMode}
-            options={[
-              ["json", "JSON"],
-              ["text", "Plain text"],
-            ]}
-          />
-          <Segmented
-            label="Layout"
-            value={view}
-            onChange={setView}
-            options={[
-              ["split", "Side by side"],
-              ["unified", "Unified"],
-            ]}
-          />
-          {json ? (
-            <label className="flex cursor-pointer items-center gap-1.5">
-              <input type="checkbox" checked={ignoreOrder} onChange={(e) => setIgnoreOrder(e.target.checked)} /> Ignore key order
-            </label>
-          ) : (
-            <>
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <input type="checkbox" checked={ignoreWhitespace} onChange={(e) => setIgnoreWhitespace(e.target.checked)} /> Ignore whitespace
-              </label>
-              <label className="flex cursor-pointer items-center gap-1.5">
-                <input type="checkbox" checked={ignoreCase} onChange={(e) => setIgnoreCase(e.target.checked)} /> Ignore case
-              </label>
-            </>
-          )}
-          <label className="flex cursor-pointer items-center gap-1.5">
-            <input type="checkbox" checked={changesOnly} onChange={(e) => setChangesOnly(e.target.checked)} /> Changes only
-          </label>
-          <button
-            type="button"
-            onClick={swap}
-            className="flex items-center gap-1 rounded-md border border-line px-2 py-0.5 hover:bg-panel2 hover:text-fg"
-            title="Swap the editor content and the comparison text"
-          >
-            <ArrowLeftRight className="size-3" aria-hidden /> Swap sides
-          </button>
-          {result?.ok && (
-            <span className="ml-auto">
-              <span className="text-ok">+{formatNumber(result.added)}</span> <span className="text-danger">−{formatNumber(result.removed)}</span>
-              {result.added + result.removed === 0 && " · identical"}
-            </span>
-          )}
-        </div>
+        <DiffControls s={s} set={set} result={result}>
+          <SwapButton onClick={swap} />
+        </DiffControls>
       </div>
-
       {!compareText.trim() && <Hint text={json ? "Paste a second JSON document above to see the differences." : "Paste a second text above to see the differences."} />}
-      {result && !result.ok && (
-        <Hint
-          danger
-          text={`The ${result.side === "left" ? "editor content" : "comparison JSON"} is not valid JSON: ${result.error.message}${result.error.line ? ` (line ${result.error.line})` : ""}. Switch to Plain text to compare it anyway.`}
-        />
-      )}
-
-      {result?.ok && (
-        <>
-          {result.truncated && <div className="bg-warn/15 px-3 py-1 text-xs text-warn">Diff truncated to the first {formatNumber(result.lines.length)} lines.</div>}
-          {view === "split" && (
-            <div className="grid grid-cols-2 border-b border-line text-xs text-muted" aria-hidden>
-              <div className="px-3 py-1">Editor (original)</div>
-              <div className="border-l border-line px-3 py-1">Comparison (changed)</div>
-            </div>
-          )}
-          <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto font-mono text-xs">
-            <div style={{ height: virtualizer.getTotalSize(), position: "relative", minWidth: view === "unified" ? "max-content" : undefined }}>
-              {virtualizer.getVirtualItems().map((v) =>
-                view === "split" ? (
-                  <SplitRowView key={v.index} index={v.index} start={v.start} row={rows[v.index]} measure={virtualizer.measureElement} />
-                ) : (
-                  <UnifiedRowView key={v.index} start={v.start} line={lines[v.index]} />
-                ),
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {invalid && <Hint danger text={invalid} />}
+      {result?.ok && <DiffResultView result={result} s={s} leftTitle="Editor (original)" rightTitle="Comparison (changed)" />}
     </div>
   );
 }
@@ -272,7 +331,7 @@ function Half({ line, side }: { line: DiffLine | null; side: "l" | "r" }) {
   );
 }
 
-function Segmented<T extends string>({
+export function Segmented<T extends string>({
   label,
   value,
   onChange,
@@ -303,6 +362,6 @@ function Segmented<T extends string>({
   );
 }
 
-function Hint({ text, danger }: { text: string; danger?: boolean }) {
+export function Hint({ text, danger }: { text: string; danger?: boolean }) {
   return <div className={cn("p-4 text-sm", danger ? "text-danger" : "text-muted")}>{text}</div>;
 }
