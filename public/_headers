@@ -15,3 +15,9 @@
 
 /monaco/*
   Cache-Control: public, max-age=31536000, immutable
+
+/manifest.webmanifest
+  X-Robots-Tag: noindex
+
+/opengraph-image*
+  X-Robots-Tag: noindex

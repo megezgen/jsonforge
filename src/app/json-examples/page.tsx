@@ -11,7 +11,7 @@ const TITLE = "JSON Examples and Sample Data";
 const DESCRIPTION = "Twelve ready-to-use JSON examples: simple, arrays, nested, user profile, paginated API, catalog, order, blog, package.json, GeoJSON, config, weather.";
 
 export const metadata: Metadata = {
-  title: { absolute: `${TITLE} | JSON Forge` },
+  title: { absolute: "JSON Examples: 12 Free Sample JSON Files to Copy" },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/json-examples/` },
   ...socialMeta({ title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/json-examples/` }),

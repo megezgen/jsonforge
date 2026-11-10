@@ -351,8 +351,8 @@ export const PAGES: ToolPage[] = [
   },
   {
     slug: "json-minify",
-    title: "JSON Minifier Online: Compress & Minify JSON Instantly",
-    description: "Minify JSON online by removing whitespace and line breaks. See the size saved, copy or download the result. Private and 100% client-side.",
+    title: "Minify JSON Online: Free JSON Minifier & Compressor",
+    description: "Minify JSON online in one click: strip whitespace and line breaks, see the bytes saved, then copy or download the minified JSON. Private, runs in your browser.",
     h1: "JSON Minifier",
     intro: "Strip every unnecessary space and line break from your JSON to make it as small as possible. Nothing is uploaded: the work happens in your browser.",
     tab: "text",

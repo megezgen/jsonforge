@@ -11,7 +11,7 @@ const TITLE = "Common JSON Errors and How to Fix Them";
 const DESCRIPTION = "Plain-language fixes for the JSON.parse errors developers meet most: unexpected token, unexpected end of input, trailing commas, bad escapes and more.";
 
 export const metadata: Metadata = {
-  title: { absolute: `${TITLE} | JSON Forge` },
+  title: { absolute: "JSON Error Messages Explained: What Each One Means" },
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/json-errors/` },
   ...socialMeta({ title: TITLE, description: DESCRIPTION, url: `${SITE_URL}/json-errors/` }),

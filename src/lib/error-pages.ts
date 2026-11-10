@@ -42,7 +42,7 @@ export const ERROR_PAGES: ErrorPage[] = [
     answer: "The text you parsed starts with <, so it is HTML, not JSON. A server almost certainly returned a web page: a 404 or 500 error page, a login page, or your app's index.html. Fix the request, not the JSON: check the URL, the HTTP status and the Content-Type before calling JSON.parse.",
     python: ["Expecting value: line 1 column 1 (char 0)"],
     h1: "Unexpected token '<' in JSON at position 0",
-    title: "Unexpected token '<' in JSON at position 0: Causes and Fixes",
+    title: "Unexpected token < in JSON at position 0: How to Fix",
     description:
       "Why JSON.parse says Unexpected token '<' (the response is HTML, not JSON), the five usual causes, and how to find out what your server really returned.",
     messages: [`Unexpected token '<', "<!DOCTYPE "... is not valid JSON`, "Unexpected token < in JSON at position 0 (older Chrome and Node.js)"],
